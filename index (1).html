@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SPX GEX Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg-primary:    #080c14;
+    --bg-secondary:  #0d1424;
+    --bg-card:       #111827;
+    --bg-card2:      #0f172a;
+    --border:        #1e2d3d;
+    --border-bright: #2a3f5c;
+    --text-primary:  #e2e8f4;
+    --text-sec:      #8892a4;
+    --text-muted:    #475569;
+    --green:         #10d488;
+    --green-dim:     #0d9e66;
+    --red:           #f04155;
+    --red-dim:       #b0293a;
+    --yellow:        #f5c542;
+    --blue:          #4f8ef7;
+    --purple:        #a78bfa;
+    --orange:        #fb923c;
+    --cyan:          #22d3ee;
+    --font:          'Courier New', monospace;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: var(--bg-primary); color: var(--text-primary); font-family: var(--font); font-size: 13px; }
+  body { display: flex; flex-direction: column; min-height: 100vh; }
+
+  /* ── Header ─────────────────────────────────────────────── */
+  #header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 20px; background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border); flex-shrink: 0;
+  }
+  #header .brand { display: flex; align-items: center; gap: 10px; }
+  #header .brand-icon { font-size: 20px; }
+  #header .brand-text { font-size: 15px; font-weight: bold; letter-spacing: 2px; color: var(--cyan); }
+  #spx-price-display { font-size: 26px; font-weight: bold; letter-spacing: 1px; transition: color 0.3s; }
+  #spx-price-display.up   { color: var(--green); }
+  #spx-price-display.down { color: var(--red); }
+  #spx-price-display.flat { color: var(--text-primary); }
+  #header-right { display: flex; align-items: center; gap: 16px; font-size: 11px; color: var(--text-sec); }
+  .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); display: inline-block; animation: pulse 1.5s infinite; margin-right: 4px; }
+  .live-dot.offline { background: var(--red); animation: none; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(1.4)} }
+  #market-status { padding: 2px 8px; border-radius: 3px; font-size: 10px; font-weight: bold; letter-spacing: 1px; }
+  #market-status.open   { background: rgba(16,212,136,.15); color: var(--green); border: 1px solid var(--green-dim); }
+  #market-status.closed { background: rgba(240,65,85,.12); color: var(--red);   border: 1px solid var(--red-dim); }
+
+  /* ── Regime Banner ───────────────────────────────────────── */
+  #regime-banner {
+    padding: 6px 20px; font-size: 11px; letter-spacing: 1.5px; font-weight: bold;
+    display: flex; align-items: center; gap: 20px; flex-shrink: 0;
+    transition: background .5s, color .5s;
+  }
+  #regime-banner.positive {
+    background: rgba(16,212,136,.08); border-bottom: 1px solid rgba(16,212,136,.2); color: var(--green);
+  }
+  #regime-banner.negative {
+    background: rgba(240,65,85,.08); border-bottom: 1px solid rgba(240,65,85,.2); color: var(--red);
+  }
+  #regime-text { flex: 1; }
+  #regime-advice { font-weight: normal; font-size: 10px; color: var(--text-sec); letter-spacing: .5px; }
+
+  /* ── Key Levels Row ──────────────────────────────────────── */
+  #levels-row {
+    display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px;
+    padding: 10px 16px; background: var(--bg-secondary); flex-shrink: 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .level-card {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px;
+    padding: 8px 12px; display: flex; flex-direction: column; gap: 3px;
+  }
+  .level-card .lc-label { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); }
+  .level-card .lc-value { font-size: 17px; font-weight: bold; letter-spacing: .5px; }
+  .level-card .lc-sub   { font-size: 9px; color: var(--text-sec); }
+  .lc-gf   { border-left: 3px solid var(--purple) !important; }
+  .lc-zg   { border-left: 3px solid var(--cyan)   !important; }
+  .lc-vt   { border-left: 3px solid var(--orange)  !important; }
+  .lc-cw   { border-left: 3px solid var(--green)   !important; }
+  .lc-pw   { border-left: 3px solid var(--red)     !important; }
+  .lc-max  { border-left: 3px solid var(--yellow)  !important; }
+
+  /* ── Main Content ─────────────────────────────────────────── */
+  #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  #charts-row {
+    flex: 1; display: grid; grid-template-columns: 1fr 340px;
+    gap: 0; overflow: hidden;
+  }
+
+  /* ── GEX Heatmap Panel ───────────────────────────────────── */
+  #heatmap-panel {
+    display: flex; flex-direction: column; border-right: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .panel-header {
+    padding: 8px 14px; background: var(--bg-card2);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .panel-title { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-sec); }
+  #heatmap-scroll { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 8px 14px; }
+  #heatmap-scroll::-webkit-scrollbar { width: 4px; }
+  #heatmap-scroll::-webkit-scrollbar-track { background: var(--bg-primary); }
+  #heatmap-scroll::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 2px; }
+
+  /* Custom heatmap bars */
+  .hmap-row {
+    display: flex; align-items: center; gap: 6px; padding: 1.5px 0;
+    transition: background .15s; cursor: default; border-radius: 3px;
+  }
+  .hmap-row:hover { background: rgba(255,255,255,.03); }
+  .hmap-row.atm { background: rgba(79,142,247,.07); }
+  .hmap-row.is-max-gex { background: rgba(245,197,66,.05); }
+  .strike-label {
+    width: 52px; text-align: right; font-size: 10px; color: var(--text-sec);
+    flex-shrink: 0; font-family: var(--font);
+  }
+  .hmap-row.atm .strike-label { color: var(--blue); font-weight: bold; }
+  .hmap-row.is-max-gex .strike-label { color: var(--yellow); }
+  .bar-wrapper {
+    flex: 1; height: 14px; position: relative; display: flex; align-items: center;
+  }
+  .bar-zero { position: absolute; left: 50%; width: 1px; height: 100%; background: var(--border-bright); }
+  .bar-fill {
+    position: absolute; height: 10px; border-radius: 1px; transition: width .4s ease;
+  }
+  .bar-fill.positive { left: 50%; background: linear-gradient(90deg, #0d9e66, #10d488); }
+  .bar-fill.negative { right: 50%; background: linear-gradient(270deg, #b0293a, #f04155); }
+  .gex-val {
+    width: 58px; font-size: 9px; text-align: right; flex-shrink: 0;
+    font-family: var(--font);
+  }
+  .level-marker {
+    width: 52px; font-size: 8px; text-align: right; flex-shrink: 0;
+    letter-spacing: .5px; font-weight: bold;
+  }
+
+  /* Spot line */
+  .spot-separator {
+    display: flex; align-items: center; gap: 6px; padding: 3px 0;
+    color: var(--blue); font-size: 9px; letter-spacing: 1px;
+  }
+  .spot-separator::before, .spot-separator::after {
+    content: ''; flex: 1; height: 1px; background: var(--blue); opacity: .5;
+  }
+
+  /* ── Right Panel ──────────────────────────────────────────── */
+  #right-panel { display: flex; flex-direction: column; overflow: hidden; }
+
+  /* Call/Put Split */
+  #split-panel {
+    display: flex; flex-direction: column; border-bottom: 1px solid var(--border);
+    flex: 1; overflow: hidden;
+  }
+  #split-chart-wrapper { flex: 1; padding: 8px 10px; overflow: hidden; position: relative; }
+
+  /* Cumulative GEX */
+  #cumulative-panel {
+    display: flex; flex-direction: column; flex: 1; overflow: hidden;
+  }
+  #cumulative-chart-wrapper { flex: 1; padding: 8px 10px; overflow: hidden; position: relative; }
+
+  /* ── Controls Bar ────────────────────────────────────────── */
+  #controls {
+    padding: 8px 16px; background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    display: flex; align-items: center; gap: 16px; flex-shrink: 0; flex-wrap: wrap;
+  }
+  .ctrl-group { display: flex; align-items: center; gap: 6px; }
+  .ctrl-label { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); }
+  .expiry-btn {
+    padding: 3px 9px; border-radius: 3px; border: 1px solid var(--border-bright);
+    background: transparent; color: var(--text-sec); font-family: var(--font);
+    font-size: 10px; cursor: pointer; transition: all .15s; letter-spacing: .5px;
+  }
+  .expiry-btn:hover  { border-color: var(--cyan); color: var(--cyan); }
+  .expiry-btn.active { border-color: var(--cyan); background: rgba(34,211,238,.12); color: var(--cyan); }
+  #refresh-btn {
+    padding: 4px 14px; border-radius: 3px; border: 1px solid var(--border-bright);
+    background: transparent; color: var(--text-sec); font-family: var(--font);
+    font-size: 10px; cursor: pointer; transition: all .15s; margin-left: auto;
+  }
+  #refresh-btn:hover  { border-color: var(--green); color: var(--green); }
+  #countdown { font-size: 10px; color: var(--text-muted); min-width: 50px; }
+  #last-update { font-size: 9px; color: var(--text-muted); }
+  #meta-info  { font-size: 9px; color: var(--text-muted); margin-left: auto; }
+
+  /* ── Loading / Error ─────────────────────────────────────── */
+  #overlay {
+    position: fixed; inset: 0; background: rgba(8,12,20,.92);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 16px; z-index: 100;
+  }
+  #overlay.hidden { display: none; }
+  .spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--cyan); border-radius: 50%; animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #overlay-msg { color: var(--text-sec); font-size: 12px; letter-spacing: 1px; }
+  #error-box {
+    background: rgba(240,65,85,.1); border: 1px solid var(--red-dim);
+    border-radius: 6px; padding: 16px 24px; max-width: 500px;
+    text-align: center; color: var(--red); font-size: 11px; line-height: 1.7;
+  }
+  #error-box .err-title { font-size: 14px; margin-bottom: 8px; letter-spacing: 1px; }
+  #error-retry { margin-top: 14px; padding: 6px 20px; border-radius: 3px; border: 1px solid var(--red-dim); background: transparent; color: var(--red); font-family: var(--font); cursor: pointer; font-size: 11px; }
+  #error-retry:hover { background: rgba(240,65,85,.15); }
+
+  /* ── Legend ──────────────────────────────────────────────── */
+  .legend { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .leg-item { display: flex; align-items: center; gap: 4px; font-size: 9px; color: var(--text-sec); }
+  .leg-dot { width: 8px; height: 8px; border-radius: 1px; }
+
+  /* ── Tooltip ─────────────────────────────────────────────── */
+  #tooltip {
+    position: fixed; background: var(--bg-card); border: 1px solid var(--border-bright);
+    border-radius: 5px; padding: 8px 12px; font-size: 10px; pointer-events: none;
+    z-index: 200; display: none; line-height: 1.8; min-width: 180px;
+  }
+  #tooltip .tt-strike { font-size: 13px; font-weight: bold; color: var(--text-primary); margin-bottom: 4px; }
+  #tooltip .tt-row { display: flex; justify-content: space-between; gap: 16px; }
+  #tooltip .tt-label { color: var(--text-muted); }
+
+  /* ── Responsive ──────────────────────────────────────────── */
+  @media (max-width: 900px) {
+    #levels-row { grid-template-columns: repeat(3, 1fr); }
+    #charts-row { grid-template-columns: 1fr; }
+    #right-panel { display: none; }
+  }
+  @media (max-width: 600px) {
+    #levels-row { grid-template-columns: repeat(2, 1fr); }
+    #spx-price-display { font-size: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Overlay -->
+<div id="overlay">
+  <div class="spinner" id="spinner"></div>
+  <div id="overlay-msg">INITIALIZING GEX ENGINE...</div>
+  <div id="error-box" style="display:none">
+    <div class="err-title">⚠ DATA ERROR</div>
+    <div id="error-detail">—</div>
+    <button id="error-retry" onclick="retryLoad()">RETRY</button>
+  </div>
+</div>
+
+<!-- Tooltip -->
+<div id="tooltip"></div>
+
+<!-- Header -->
+<div id="header">
+  <div class="brand">
+    <span class="brand-icon">⬛</span>
+    <span class="brand-text">SPX · GEX · DASHBOARD</span>
+  </div>
+  <div id="spx-price-display" class="flat">—</div>
+  <div id="header-right">
+    <div><span class="live-dot" id="live-dot"></span><span id="live-label">LIVE</span></div>
+    <div id="market-status" class="closed">CLOSED</div>
+    <div id="clock">--:--:--</div>
+  </div>
+</div>
+
+<!-- Regime Banner -->
+<div id="regime-banner" class="positive">
+  <span id="regime-text">⟳ LOADING...</span>
+  <span id="regime-advice"></span>
+</div>
+
+<!-- Key Levels -->
+<div id="levels-row">
+  <div class="level-card lc-gf">
+    <div class="lc-label">Gamma Flip</div>
+    <div class="lc-value" id="lv-gf">—</div>
+    <div class="lc-sub" id="lv-gf-sub">regime change level</div>
+  </div>
+  <div class="level-card lc-zg">
+    <div class="lc-label">Zero Gamma</div>
+    <div class="lc-value" id="lv-zg">—</div>
+    <div class="lc-sub">dealer gamma-neutral</div>
+  </div>
+  <div class="level-card lc-vt">
+    <div class="lc-label">Vol Trigger</div>
+    <div class="lc-value" id="lv-vt">—</div>
+    <div class="lc-sub">volatility accelerator</div>
+  </div>
+  <div class="level-card lc-cw">
+    <div class="lc-label">Call Wall</div>
+    <div class="lc-value" id="lv-cw">—</div>
+    <div class="lc-sub">overhead resistance</div>
+  </div>
+  <div class="level-card lc-pw">
+    <div class="lc-label">Put Wall</div>
+    <div class="lc-value" id="lv-pw">—</div>
+    <div class="lc-sub">downside support</div>
+  </div>
+  <div class="level-card lc-max">
+    <div class="lc-label">Max GEX Strike</div>
+    <div class="lc-value" id="lv-max">—</div>
+    <div class="lc-sub" id="lv-max-sub">gamma pin / magnet</div>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div id="main">
+  <div id="charts-row">
+
+    <!-- Left: GEX Heatmap -->
+    <div id="heatmap-panel">
+      <div class="panel-header">
+        <span class="panel-title">⚡ NET GEX BY STRIKE — $B (Dealers' Gamma Profile)</span>
+        <div class="legend">
+          <div class="leg-item"><div class="leg-dot" style="background:var(--green)"></div>Call GEX</div>
+          <div class="leg-item"><div class="leg-dot" style="background:var(--red)"></div>Put GEX</div>
+          <div class="leg-item"><div class="leg-dot" style="background:var(--yellow);width:3px;height:8px"></div>Max GEX</div>
+          <div class="leg-item"><div class="leg-dot" style="background:var(--blue);width:3px;height:8px"></div>Spot</div>
+        </div>
+      </div>
+      <div id="heatmap-scroll"></div>
+    </div>
+
+    <!-- Right: Call/Put Split + Cumulative -->
+    <div id="right-panel">
+      <div id="split-panel">
+        <div class="panel-header">
+          <span class="panel-title">Call / Put GEX Split</span>
+        </div>
+        <div id="split-chart-wrapper">
+          <canvas id="split-chart"></canvas>
+        </div>
+      </div>
+      <div id="cumulative-panel">
+        <div class="panel-header">
+          <span class="panel-title">Cumulative GEX Profile</span>
+        </div>
+        <div id="cumulative-chart-wrapper">
+          <canvas id="cumulative-chart"></canvas>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Controls -->
+<div id="controls">
+  <div class="ctrl-group">
+    <span class="ctrl-label">Expiry</span>
+    <button class="expiry-btn active" data-days="1">0DTE</button>
+    <button class="expiry-btn" data-days="7">1W</button>
+    <button class="expiry-btn" data-days="30">1M</button>
+    <button class="expiry-btn active" data-days="45">45D</button>
+    <button class="expiry-btn" data-days="90">90D</button>
+  </div>
+  <div class="ctrl-group">
+    <span class="ctrl-label">Auto-Refresh</span>
+    <button class="expiry-btn" data-interval="30">30s</button>
+    <button class="expiry-btn active" data-interval="60">60s</button>
+    <button class="expiry-btn" data-interval="300">5m</button>
+    <button class="expiry-btn" data-interval="0">Off</button>
+  </div>
+  <button id="refresh-btn">↺ REFRESH</button>
+  <div id="countdown"></div>
+  <div id="last-update"></div>
+  <div id="meta-info"></div>
+</div>
+
+<script>
+// ─── State ───────────────────────────────────────────────────────────────────
+const state = {
+  data: null,
+  daysOut: 45,
+  intervalSeconds: 60,
+  countdown: 0,
+  timer: null,
+  countdownTimer: null,
+  prevSpot: null,
+  splitChart: null,
+  cumulChart: null,
+};
+
+// ─── DOM refs ────────────────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const overlay     = $('overlay');
+const spinner     = $('spinner');
+const overlayMsg  = $('overlay-msg');
+const errorBox    = $('error-box');
+const errorDetail = $('error-detail');
+const tooltip     = $('tooltip');
+
+// ─── Clock ───────────────────────────────────────────────────────────────────
+function updateClock() {
+  const now = new Date();
+  $('clock').textContent = now.toLocaleTimeString('en-US', {
+    hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit',
+    timeZone: 'America/New_York'
+  }) + ' ET';
+
+  // Market hours: 9:30 - 16:00 ET, Mon-Fri
+  const day = now.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'America/New_York' });
+  const etTime = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+  const h = etTime.getHours(), m = etTime.getMinutes();
+  const isWeekday = !['Sat','Sun'].includes(day);
+  const isOpen = isWeekday && (h > 9 || (h === 9 && m >= 30)) && h < 16;
+
+  const ms = $('market-status');
+  const ld = $('live-dot');
+  ms.textContent = isOpen ? 'MARKET OPEN' : 'MARKET CLOSED';
+  ms.className = isOpen ? 'open' : 'closed';
+  ld.className = isOpen ? 'live-dot' : 'live-dot offline';
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ─── Number Formatters ───────────────────────────────────────────────────────
+const fmt  = n => n == null ? '—' : n.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+const fmtB = n => n == null ? '—' : (n >= 0 ? '+' : '') + n.toFixed(2) + 'B';
+const fmtS = n => n == null ? '—' : n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+// ─── Fetch GEX Data ──────────────────────────────────────────────────────────
+async function fetchGEX() {
+  showLoading('FETCHING SPX OPTIONS CHAIN...');
+  const API_KEY = "7WAhtcLRjrxeQD01KGFAn34aaTF3BCrsDoSAkELz";
+  const BASE    = "https://lab.flashalpha.com/v1";
+  const HEADERS = { "X-Api-Key": API_KEY };
+
+  try {
+    const [gexRes, levelsRes] = await Promise.all([
+      fetch(`${BASE}/exposure/gex/SPX?expiration=${new Date().toISOString().split("T")[0]}`,    { headers: HEADERS, cache: "no-store" }),
+      fetch(`${BASE}/exposure/levels/SPX?expiration=${new Date().toISOString().split("T")[0]}`, { headers: HEADERS, cache: "no-store" }),
+    ]);
+
+    if (!gexRes.ok) {
+      const txt = await gexRes.text();
+      throw new Error(`FlashAlpha GEX ${gexRes.status}: ${txt.slice(0,200)}`);
+    }
+    if (!levelsRes.ok) {
+      const txt = await levelsRes.text();
+      throw new Error(`FlashAlpha Levels ${levelsRes.status}: ${txt.slice(0,200)}`);
+    }
+
+    const gexData    = await gexRes.json();
+    const levelsData = await levelsRes.json();
+
+    const strikes = (gexData.strikes || []).sort((a, b) => a.strike - b.strike);
+    if (!strikes.length) throw new Error("No strike data returned from FlashAlpha.");
+
+    const spotPrice = gexData.spot_price || gexData.underlying_price || levelsData.spot_price || 0;
+
+    const heatmapData = strikes.map(s => {
+      const netGex  = parseFloat(((s.gex || 0) / 1e9).toFixed(4));
+      const callGex = netGex > 0 ? parseFloat(netGex.toFixed(4)) : 0;
+      const putGex  = netGex < 0 ? parseFloat(Math.abs(netGex).toFixed(4)) : 0;
+      return { strike: s.strike, netGex, callGex, putGex,
+               callOI: s.call_oi || 0, putOI: s.put_oi || 0,
+               weightedCallIV: s.call_iv || 0, weightedPutIV: s.put_iv || 0 };
+    });
+
+    const totalNetGex = parseFloat(heatmapData.reduce((s,d) => s + d.netGex, 0).toFixed(3));
+    const strikePrices = heatmapData.map(d => d.strike);
+    const atmStrike = spotPrice
+      ? strikePrices.reduce((b,s) => Math.abs(s-spotPrice) < Math.abs(b-spotPrice) ? s : b)
+      : strikePrices[Math.floor(strikePrices.length/2)];
+    const maxGexStrike = heatmapData.reduce((b,d) =>
+      Math.abs(d.netGex) > Math.abs(b.netGex) ? d : b).strike;
+
+    let cumSum = 0;
+    const cumulativeProfile = heatmapData.map(d => {
+      cumSum += d.netGex;
+      return { strike: d.strike, cumGex: parseFloat(cumSum.toFixed(4)) };
+    });
+
+    const json = {
+      spotPrice, atmStrike,
+      timestamp: gexData.updated_at || new Date().toISOString(),
+      keyLevels: {
+        gammaFlip:      levelsData.gamma_flip  || gexData.gamma_flip || null,
+        zeroGamma:      levelsData.zero_gamma  || null,
+        volTrigger:     levelsData.vol_trigger || null,
+        callWall:       levelsData.call_wall   || null,
+        putWall:        levelsData.put_wall    || null,
+        maxGexStrike, totalNetGex,
+        regime:         (gexData.regime || (totalNetGex >= 0 ? "positive" : "negative")).toUpperCase(),
+        regimeStrength: Math.abs(totalNetGex),
+      },
+      heatmapData, cumulativeProfile, expirations: [],
+      meta: { contractsAnalyzed: strikes.length, strikesInRange: strikes.length, source: "FlashAlpha" },
+    };
+
+    state.data = json;
+    state.prevSpot = json.spotPrice;
+    renderAll(json);
+    hideOverlay();
+    resetCountdown();
+  } catch (err) {
+    showError('Error: ' + err.message);
+  }
+}
+
+// ─── Render All ──────────────────────────────────────────────────────────────
+function renderAll(data) {
+  const { spotPrice, keyLevels, heatmapData, cumulativeProfile, expirations, meta, timestamp } = data;
+
+  // Header price
+  const priceEl = $('spx-price-display');
+  const prev = state.prevSpot;
+  priceEl.textContent = fmtS(spotPrice);
+  priceEl.className = prev == null ? 'flat' : spotPrice > prev ? 'up' : spotPrice < prev ? 'down' : 'flat';
+  state.prevSpot = spotPrice;
+
+  // Regime banner
+  const banner = $('regime-banner');
+  const isPos = keyLevels.regime === 'POSITIVE';
+  banner.className = isPos ? 'positive' : 'negative';
+  $('regime-text').textContent = isPos
+    ? `▲ POSITIVE GEX REGIME  [Total: ${fmtB(keyLevels.totalNetGex)}]`
+    : `▼ NEGATIVE GEX REGIME  [Total: ${fmtB(keyLevels.totalNetGex)}]`;
+  $('regime-advice').textContent = isPos
+    ? 'Dealers LONG gamma → expect mean-reversion, fade moves, sell premium'
+    : 'Dealers SHORT gamma → expect momentum/acceleration, follow breakouts, buy directional';
+
+  // Key level cards
+  $('lv-gf').textContent = fmt(keyLevels.gammaFlip);
+  $('lv-gf-sub').textContent = keyLevels.gammaFlip
+    ? (spotPrice > keyLevels.gammaFlip ? '▲ Price ABOVE flip (bullish)' : '▼ Price BELOW flip (bearish)')
+    : 'not detected';
+  $('lv-zg').textContent = fmt(keyLevels.zeroGamma);
+  $('lv-vt').textContent = fmt(keyLevels.volTrigger);
+  $('lv-cw').textContent = fmt(keyLevels.callWall);
+  $('lv-pw').textContent = fmt(keyLevels.putWall);
+  $('lv-max').textContent = fmt(keyLevels.maxGexStrike);
+  $('lv-max-sub').textContent = keyLevels.maxGexStrike
+    ? `${fmtB(heatmapData.find(d => d.strike === keyLevels.maxGexStrike)?.netGex)} net GEX`
+    : 'gamma pin / magnet';
+
+  // Meta
+  $('meta-info').textContent = `${meta.contractsAnalyzed.toLocaleString()} contracts · ${meta.strikesInRange} strikes`;
+  $('last-update').textContent = 'Updated: ' + new Date(timestamp).toLocaleTimeString('en-US', { hour12: false });
+
+  // Charts
+  renderHeatmap(data);
+  renderSplitChart(data);
+  renderCumulChart(data);
+}
+
+// ─── Heatmap Renderer ─────────────────────────────────────────────────────────
+function renderHeatmap({ heatmapData, spotPrice, keyLevels }) {
+  const container = $('heatmap-scroll');
+  const rows = [...heatmapData].reverse(); // highest strike at top
+
+  const maxAbsGex = Math.max(...heatmapData.map(d => Math.abs(d.netGex)), 0.001);
+  const BAR_MAX_PCT = 48; // max bar half-width as % of wrapper
+
+  let html = '';
+  let spotInserted = false;
+
+  for (const d of rows) {
+    const isAtm   = d.strike === data_atmStrike(heatmapData, spotPrice);
+    const isMax   = d.strike === keyLevels.maxGexStrike;
+    const isGF    = d.strike === keyLevels.gammaFlip;
+    const isZG    = d.strike === keyLevels.zeroGamma;
+    const isVT    = d.strike === keyLevels.volTrigger;
+    const isCW    = d.strike === keyLevels.callWall;
+    const isPW    = d.strike === keyLevels.putWall;
+
+    // Insert spot separator
+    if (!spotInserted && d.strike <= spotPrice) {
+      html += `<div class="spot-separator">▶ SPOT ${fmtS(spotPrice)}</div>`;
+      spotInserted = true;
+    }
+
+    const barPct = (Math.abs(d.netGex) / maxAbsGex) * BAR_MAX_PCT;
+    const isPos = d.netGex >= 0;
+
+    // Level tag
+    let tag = '';
+    if (isMax) tag = `<span style="color:var(--yellow);font-size:8px;font-weight:bold">MAX</span>`;
+    else if (isGF) tag = `<span style="color:var(--purple);font-size:8px;font-weight:bold">FLIP</span>`;
+    else if (isZG) tag = `<span style="color:var(--cyan);font-size:8px;font-weight:bold">0Γ</span>`;
+    else if (isVT) tag = `<span style="color:var(--orange);font-size:8px;font-weight:bold">VT</span>`;
+    else if (isCW) tag = `<span style="color:var(--green);font-size:8px;font-weight:bold">CW</span>`;
+    else if (isPW) tag = `<span style="color:var(--red);font-size:8px;font-weight:bold">PW</span>`;
+
+    const rowClass = [
+      'hmap-row',
+      isAtm ? 'atm' : '',
+      isMax ? 'is-max-gex' : '',
+    ].filter(Boolean).join(' ');
+
+    const valColor = isPos ? 'var(--green)' : 'var(--red)';
+
+    html += `
+      <div class="${rowClass}"
+           data-strike="${d.strike}"
+           data-net="${d.netGex}"
+           data-cgex="${d.callGex}" data-pgex="${d.putGex}"
+           data-coi="${d.callOI}" data-poi="${d.putOI}"
+           onmouseenter="showTip(event,this)" onmouseleave="hideTip()">
+        <span class="strike-label">${d.strike.toLocaleString()}</span>
+        <div class="bar-wrapper">
+          <div class="bar-zero"></div>
+          <div class="bar-fill ${isPos ? 'positive' : 'negative'}"
+               style="width:${barPct.toFixed(1)}%;opacity:${0.35 + (barPct/BAR_MAX_PCT)*0.65}"></div>
+        </div>
+        <span class="gex-val" style="color:${valColor}">${fmtB(d.netGex)}</span>
+        <span class="level-marker">${tag}</span>
+      </div>`;
+  }
+
+  if (!spotInserted) {
+    html += `<div class="spot-separator">▶ SPOT ${fmtS(spotPrice)}</div>`;
+  }
+
+  container.innerHTML = html;
+
+  // Scroll ATM into view
+  setTimeout(() => {
+    const atmEl = container.querySelector('.atm') || container.querySelector('.spot-separator');
+    if (atmEl) atmEl.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }, 100);
+}
+
+function data_atmStrike(heatmapData, spot) {
+  return heatmapData.reduce((best, d) =>
+    Math.abs(d.strike - spot) < Math.abs(best.strike - spot) ? d : best
+  ).strike;
+}
+
+// ─── Tooltip ─────────────────────────────────────────────────────────────────
+function showTip(e, el) {
+  const strike = Number(el.dataset.strike);
+  const net    = Number(el.dataset.net);
+  const cgex   = Number(el.dataset.cgex);
+  const pgex   = Number(el.dataset.pgex);
+  const coi    = Number(el.dataset.coi);
+  const poi    = Number(el.dataset.poi);
+  const pcr    = coi > 0 ? (poi / coi).toFixed(2) : '∞';
+
+  tooltip.innerHTML = `
+    <div class="tt-strike">${strike.toLocaleString()}</div>
+    <div class="tt-row"><span class="tt-label">Net GEX</span><span style="color:${net>=0?'var(--green)':'var(--red)'}">${fmtB(net)}</span></div>
+    <div class="tt-row"><span class="tt-label">Call GEX</span><span style="color:var(--green)">+${cgex.toFixed(3)}B</span></div>
+    <div class="tt-row"><span class="tt-label">Put GEX</span><span style="color:var(--red)">-${pgex.toFixed(3)}B</span></div>
+    <div class="tt-row"><span class="tt-label">Call OI</span><span>${coi.toLocaleString()}</span></div>
+    <div class="tt-row"><span class="tt-label">Put OI</span><span>${poi.toLocaleString()}</span></div>
+    <div class="tt-row"><span class="tt-label">P/C Ratio</span><span>${pcr}</span></div>`;
+  tooltip.style.display = 'block';
+  positionTip(e);
+}
+function hideTip()  { tooltip.style.display = 'none'; }
+function positionTip(e) {
+  const x = e.clientX + 12, y = e.clientY - 20;
+  tooltip.style.left = (x + tooltip.offsetWidth > window.innerWidth ? x - tooltip.offsetWidth - 24 : x) + 'px';
+  tooltip.style.top  = Math.max(0, y) + 'px';
+}
+document.addEventListener('mousemove', e => {
+  if (tooltip.style.display !== 'none') positionTip(e);
+});
+
+// ─── Call/Put Split Chart ────────────────────────────────────────────────────
+function renderSplitChart({ heatmapData, spotPrice }) {
+  const canvas = $('split-chart');
+  const wrapper = $('split-chart-wrapper');
+  canvas.width  = wrapper.clientWidth;
+  canvas.height = wrapper.clientHeight;
+
+  // Use top 20 strikes by total GEX near spot
+  const near = heatmapData
+    .filter(d => Math.abs(d.strike - spotPrice) <= spotPrice * 0.06)
+    .sort((a, b) => (b.callGex + b.putGex) - (a.callGex + a.putGex))
+    .slice(0, 20)
+    .sort((a, b) => a.strike - b.strike);
+
+  if (state.splitChart) { state.splitChart.destroy(); state.splitChart = null; }
+
+  state.splitChart = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: near.map(d => d.strike.toLocaleString()),
+      datasets: [
+        {
+          label: 'Call GEX',
+          data: near.map(d => parseFloat(d.callGex.toFixed(3))),
+          backgroundColor: 'rgba(16,212,136,0.65)',
+          borderColor: '#10d488',
+          borderWidth: 1,
+          borderRadius: 2,
+        },
+        {
+          label: 'Put GEX',
+          data: near.map(d => -parseFloat(d.putGex.toFixed(3))),
+          backgroundColor: 'rgba(240,65,85,0.65)',
+          borderColor: '#f04155',
+          borderWidth: 1,
+          borderRadius: 2,
+        }
+      ]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: false,
+      animation: { duration: 400 },
+      scales: {
+        x: {
+          stacked: false,
+          ticks: { color: '#475569', font: { size: 9 }, maxTicksLimit: 5 },
+          grid: { color: '#1e2d3d' },
+        },
+        y: {
+          ticks: { color: '#8892a4', font: { size: 8, family: 'Courier New' }, },
+          grid: { display: false },
+        }
+      },
+      plugins: {
+        legend: {
+          display: true,
+          labels: { color: '#8892a4', font: { size: 9 }, boxWidth: 10, padding: 8 }
+        },
+        tooltip: {
+          callbacks: {
+            label: ctx => `${ctx.dataset.label}: ${Math.abs(ctx.raw).toFixed(3)}B`
+          }
+        }
+      }
+    }
+  });
+}
+
+// ─── Cumulative GEX Chart ─────────────────────────────────────────────────────
+function renderCumulChart({ cumulativeProfile, keyLevels, spotPrice }) {
+  const canvas = $('cumulative-chart');
+  const wrapper = $('cumulative-chart-wrapper');
+  canvas.width  = wrapper.clientWidth;
+  canvas.height = wrapper.clientHeight;
+
+  if (state.cumulChart) { state.cumulChart.destroy(); state.cumulChart = null; }
+
+  const labels = cumulativeProfile.map(d => d.strike.toLocaleString());
+  const values = cumulativeProfile.map(d => d.cumGex);
+
+  const spotIdx = cumulativeProfile.findIndex(d => d.strike >= spotPrice);
+  const flipIdx = keyLevels.gammaFlip
+    ? cumulativeProfile.findIndex(d => d.strike >= keyLevels.gammaFlip)
+    : null;
+
+  const afterDraw = {
+    id: 'zeroLine',
+    afterDraw(chart) {
+      const { ctx, chartArea: { left, right, top, bottom }, scales: { y } } = chart;
+      const zeroY = y.getPixelForValue(0);
+      if (zeroY >= top && zeroY <= bottom) {
+        ctx.save();
+        ctx.strokeStyle = '#1e2d3d';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 3]);
+        ctx.beginPath();
+        ctx.moveTo(left, zeroY);
+        ctx.lineTo(right, zeroY);
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+  };
+
+  state.cumulChart = new Chart(canvas, {
+    type: 'line',
+    plugins: [afterDraw],
+    data: {
+      labels,
+      datasets: [{
+        label: 'Cum GEX',
+        data: values,
+        borderColor: values.map((v, i) => v >= 0 ? '#10d488' : '#f04155'),
+        backgroundColor: ctx => {
+          const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, ctx.chart.height);
+          g.addColorStop(0, 'rgba(16,212,136,.15)');
+          g.addColorStop(0.5, 'rgba(16,212,136,.02)');
+          g.addColorStop(1, 'rgba(240,65,85,.08)');
+          return g;
+        },
+        borderWidth: 1.5,
+        pointRadius: 0,
+        pointHoverRadius: 3,
+        fill: true,
+        tension: 0.3,
+        segment: {
+          borderColor: ctx => ctx.p0.parsed.y >= 0 ? '#10d488' : '#f04155',
+        }
+      }]
+    },
+    options: {
+      responsive: false,
+      animation: { duration: 400 },
+      scales: {
+        x: {
+          ticks: { color: '#475569', font: { size: 8 }, maxTicksLimit: 6, maxRotation: 0 },
+          grid: { color: '#1e2d3d' }
+        },
+        y: {
+          ticks: { color: '#475569', font: { size: 8 }, maxTicksLimit: 6 },
+          grid: { color: '#1e2d3d' }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => `Cum GEX: ${fmtB(ctx.raw)}`
+          }
+        }
+      }
+    }
+  });
+}
+
+// ─── UI States ───────────────────────────────────────────────────────────────
+function showLoading(msg) {
+  overlay.classList.remove('hidden');
+  spinner.style.display = 'block';
+  overlayMsg.textContent = msg;
+  errorBox.style.display = 'none';
+}
+function showError(msg) {
+  overlay.classList.remove('hidden');
+  spinner.style.display = 'none';
+  overlayMsg.textContent = '';
+  errorBox.style.display = 'block';
+  errorDetail.textContent = msg;
+}
+function hideOverlay() {
+  overlay.classList.add('hidden');
+}
+function retryLoad() {
+  fetchGEX();
+}
+window.retryLoad = retryLoad;
+
+// ─── Auto Refresh / Countdown ────────────────────────────────────────────────
+function resetCountdown() {
+  clearInterval(state.countdownTimer);
+  if (state.intervalSeconds <= 0) {
+    $('countdown').textContent = 'Auto-refresh OFF';
+    return;
+  }
+  state.countdown = state.intervalSeconds;
+  updateCountdownDisplay();
+  state.countdownTimer = setInterval(() => {
+    state.countdown--;
+    updateCountdownDisplay();
+    if (state.countdown <= 0) {
+      fetchGEX();
+    }
+  }, 1000);
+}
+function updateCountdownDisplay() {
+  $('countdown').textContent = `Refresh in ${state.countdown}s`;
+}
+function setRefreshInterval(secs) {
+  clearInterval(state.timer);
+  clearInterval(state.countdownTimer);
+  state.intervalSeconds = secs;
+  resetCountdown();
+}
+
+// ─── Controls ────────────────────────────────────────────────────────────────
+$('refresh-btn').addEventListener('click', fetchGEX);
+
+// Expiry buttons
+document.querySelectorAll('.expiry-btn[data-days]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.expiry-btn[data-days]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.daysOut = parseInt(btn.dataset.days);
+    fetchGEX();
+  });
+});
+
+// Interval buttons
+document.querySelectorAll('.expiry-btn[data-interval]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.expiry-btn[data-interval]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    setRefreshInterval(parseInt(btn.dataset.interval));
+  });
+});
+
+// ─── Init ────────────────────────────────────────────────────────────────────
+// Set "45D" as default active for expiry
+document.querySelectorAll('.expiry-btn[data-days]').forEach(b => b.classList.remove('active'));
+document.querySelector('.expiry-btn[data-days="45"]').classList.add('active');
+
+// Set "60s" as default active for refresh
+document.querySelectorAll('.expiry-btn[data-interval]').forEach(b => b.classList.remove('active'));
+document.querySelector('.expiry-btn[data-interval="60"]').classList.add('active');
+
+fetchGEX();
+</script>
+</body>
+</html>
