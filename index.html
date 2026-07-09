@@ -45,6 +45,19 @@
   .ticker-chg.down{color:var(--red);}
   .ticker-arrow{font-size:9px;}
 
+  /* News Ticker (bottom, CNBC-style) */
+  #news-ticker-wrap{display:flex;align-items:center;background:#000;border-top:1px solid var(--border);flex-shrink:0;height:36px;}
+  #news-ticker-label{flex-shrink:0;padding:0 16px;height:100%;display:flex;align-items:center;background:linear-gradient(90deg,#dc2626,#991b1b);color:#fff;font-size:10px;font-weight:800;letter-spacing:1px;box-shadow:2px 0 12px rgba(220,38,38,.3);z-index:3;}
+  #news-ticker-track-wrap{flex:1;overflow:hidden;position:relative;height:100%;}
+  #news-ticker-track-wrap::after{content:'';position:absolute;top:0;right:0;bottom:0;width:40px;background:linear-gradient(270deg,#000 20%,transparent);pointer-events:none;z-index:2;}
+  #news-ticker-track{display:flex;align-items:center;height:100%;white-space:nowrap;animation:news-scroll 90s linear infinite;width:max-content;}
+  #news-ticker-track:hover{animation-play-state:paused;}
+  @keyframes news-scroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+  .news-item{display:inline-flex;align-items:center;gap:8px;padding:0 24px;font-family:var(--font);font-size:12px;border-right:1px solid var(--border);color:var(--text-primary);}
+  .news-time{color:var(--text-muted);font-family:var(--font-mono);font-size:10px;}
+  .news-sym{color:var(--accent);font-weight:700;font-family:var(--font-mono);font-size:10px;background:rgba(59,130,246,.12);padding:1px 6px;border-radius:4px;}
+  .news-headline{color:var(--text-sec);}
+
   /* Header */
   #header{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;background:rgba(10,10,12,.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);flex-shrink:0;position:sticky;top:0;z-index:50;}
   .brand{display:flex;align-items:center;gap:10px;}
@@ -57,6 +70,55 @@
   #market-status{padding:4px 10px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.5px;}
   #market-status.open{background:rgba(0,214,143,.12);color:var(--green);}
   #market-status.closed{background:rgba(255,71,87,.1);color:var(--red);}
+
+  /* Tabs */
+  #tab-nav{display:flex;gap:4px;padding:10px 24px 0;background:var(--bg-secondary);border-bottom:1px solid var(--border);flex-shrink:0;}
+  .tab-btn{padding:9px 18px;border:none;background:transparent;color:var(--text-sec);font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;}
+  .tab-btn:hover{color:var(--text-primary);}
+  .tab-btn.active{color:var(--text-primary);border-bottom-color:var(--accent);}
+  .tab-panel{display:none;flex-direction:column;flex:1;overflow:hidden;}
+  .tab-panel.active{display:flex;}
+
+  /* Gamma Tab */
+  #gamma-controls{display:flex;align-items:center;gap:10px;padding:14px 24px;background:var(--bg-secondary);border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;}
+  #gamma-ticker-input{background:var(--bg-card);border:1px solid var(--border-bright);border-radius:8px;padding:9px 14px;color:var(--text-primary);font-family:var(--font-mono);font-size:13px;font-weight:600;width:220px;letter-spacing:.5px;text-transform:uppercase;}
+  #gamma-ticker-input:focus{outline:none;border-color:var(--accent);}
+  #gamma-ticker-input::placeholder{color:var(--text-muted);text-transform:none;font-weight:400;}
+  #gamma-load-btn{padding:9px 18px;border-radius:8px;border:1px solid var(--accent);background:rgba(59,130,246,.15);color:var(--accent);font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;}
+  #gamma-load-btn:hover{background:rgba(59,130,246,.25);}
+  #gamma-load-btn:disabled{opacity:.5;cursor:not-allowed;}
+  #gamma-expiry-select{background:var(--bg-card);border:1px solid var(--border-bright);border-radius:8px;padding:9px 12px;color:var(--text-primary);font-family:var(--font-mono);font-size:12px;cursor:pointer;}
+  #gamma-expiry-select:disabled{opacity:.5;cursor:not-allowed;}
+  #gamma-status{display:flex;align-items:center;font-size:11px;color:var(--text-sec);font-family:var(--font-mono);}
+  #gamma-spot{margin-left:auto;font-family:var(--font-mono);font-size:15px;font-weight:700;color:var(--text-primary);}
+
+  #gamma-body{flex:1;display:flex;overflow:hidden;padding:16px 24px;}
+  #gamma-heatmap-panel{flex:1;display:flex;flex-direction:column;background:var(--bg-card);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+  .panel-header{padding:12px 18px;background:var(--bg-elevated);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+  .panel-title{font-size:12px;font-weight:700;color:var(--text-primary);}
+  #gamma-heatmap-scroll{flex:1;overflow-y:auto;padding:14px 18px;}
+  #gamma-heatmap-scroll::-webkit-scrollbar{width:5px;}
+  #gamma-heatmap-scroll::-webkit-scrollbar-thumb{background:var(--border-bright);border-radius:3px;}
+  #gamma-empty-state{display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);font-size:13px;text-align:center;padding:40px;}
+
+  .gex-row{display:flex;align-items:center;gap:10px;padding:3px 0;border-radius:6px;transition:background .15s;}
+  .gex-row:hover{background:rgba(255,255,255,.03);}
+  .gex-row.spot-strike{background:rgba(59,130,246,.08);}
+  .gex-row.magnet-strike{background:rgba(255,234,0,.06);}
+  .gex-strike-label{width:64px;text-align:right;font-size:11px;font-family:var(--font-mono);color:var(--text-sec);flex-shrink:0;font-weight:600;}
+  .gex-row.spot-strike .gex-strike-label{color:var(--accent);}
+  .gex-row.magnet-strike .gex-strike-label{color:#ffea00;text-shadow:0 0 8px rgba(255,234,0,.6);}
+  .gex-bar-wrap{flex:1;height:18px;position:relative;display:flex;align-items:center;}
+  .gex-bar-zero{position:absolute;left:50%;width:1px;height:100%;background:var(--border-bright);}
+  .gex-bar{position:absolute;height:12px;border-radius:2px;transition:width .3s ease;}
+  .gex-bar.positive{left:50%;background:linear-gradient(90deg,var(--green-dim),var(--green));}
+  .gex-bar.negative{right:50%;background:linear-gradient(270deg,var(--red-dim),var(--red));}
+  .gex-bar.magnet-glow{box-shadow:0 0 14px 2px currentColor;filter:brightness(1.4);}
+  .gex-val{width:64px;font-size:10px;text-align:right;flex-shrink:0;font-family:var(--font-mono);}
+  .gex-oi{width:110px;font-size:9px;color:var(--text-muted);flex-shrink:0;font-family:var(--font-mono);}
+  .gex-tag{width:64px;font-size:8px;font-weight:800;letter-spacing:.5px;flex-shrink:0;}
+  .spot-divider{display:flex;align-items:center;gap:8px;padding:6px 0;color:var(--accent);font-size:9px;letter-spacing:1px;font-weight:700;}
+  .spot-divider::before,.spot-divider::after{content:'';flex:1;height:1px;background:var(--accent);opacity:.4;}
 
   /* Index strip */
   #index-strip{display:flex;gap:1px;background:var(--border);overflow-x:auto;flex-shrink:0;}
@@ -91,6 +153,15 @@
   .tile-bias.bias-bull{background:rgba(0,214,143,.18);color:#4dffc0;}
   .tile-bias.bias-bear{background:rgba(255,71,87,.18);color:#ff8a94;}
   .tile-bias.bias-neutral{background:rgba(255,255,255,.1);color:#c8c8d0;}
+
+  .tile-movers{margin-top:8px;width:88%;display:flex;flex-direction:column;gap:2px;background:rgba(0,0,0,.22);border-radius:6px;padding:6px 8px;backdrop-filter:blur(2px);}
+  .mover-row{display:flex;align-items:center;justify-content:space-between;font-family:var(--font-mono);font-size:9.5px;line-height:1.5;}
+  .mover-sym{font-weight:700;letter-spacing:.2px;text-shadow:0 1px 2px rgba(0,0,0,.5);}
+  .mover-pct{font-weight:600;}
+  .mover-pct.up{color:#4dffc0;}
+  .mover-pct.down{color:#ff8a94;}
+  .tile-movers.compact{padding:3px 5px;gap:1px;width:92%;margin-top:3px;}
+  .tile-movers.compact .mover-row{font-size:8px;line-height:1.35;}
 
   /* Volume Spike Alerts (bottom-left popup stack) */
   #volume-alerts{position:fixed;bottom:66px;left:20px;z-index:150;display:flex;flex-direction:column-reverse;gap:8px;max-width:320px;}
@@ -195,28 +266,66 @@
   </div>
 </div>
 
-<div id="index-strip"></div>
-
-<div id="controls">
-  <span class="ctrl-label">View</span>
-  <button class="ctrl-btn active" data-view="sector">Sectors</button>
-  <button class="ctrl-btn" data-view="index">Indexes</button>
-  <span class="ctrl-label" style="margin-left:10px;">Size By</span>
-  <button class="ctrl-btn active" data-size="weight">Weight</button>
-  <button class="ctrl-btn" data-size="equal">Equal</button>
-  <span class="ctrl-label" style="margin-left:10px;">Refresh</span>
-  <button class="ctrl-btn" data-interval="15">15s</button>
-  <button class="ctrl-btn active" data-interval="30">30s</button>
-  <button class="ctrl-btn" data-interval="60">60s</button>
-  <button id="refresh-btn">↺ Refresh</button>
-  <div id="countdown"></div>
+<div id="tab-nav">
+  <button class="tab-btn active" data-tab="sector">Sector Heatmap</button>
+  <button class="tab-btn" data-tab="gamma">Gamma Heatmap</button>
 </div>
 
-<div id="treemap-wrap"><div id="treemap"></div></div>
+<div id="tab-sector" class="tab-panel active">
+  <div id="index-strip"></div>
 
-<div id="legend">
-  <span>-3%</span><div id="legend-bar"></div><span>+3%</span>
-  <span style="margin-left:20px;color:var(--text-muted);">Tile size = approx S&P 500 sector weight</span>
+  <div id="controls">
+    <span class="ctrl-label">View</span>
+    <button class="ctrl-btn active" data-view="sector">Sectors</button>
+    <button class="ctrl-btn" data-view="index">Indexes</button>
+    <span class="ctrl-label" style="margin-left:10px;">Size By</span>
+    <button class="ctrl-btn active" data-size="weight">Weight</button>
+    <button class="ctrl-btn" data-size="equal">Equal</button>
+    <span class="ctrl-label" style="margin-left:10px;">Refresh</span>
+    <button class="ctrl-btn" data-interval="15">15s</button>
+    <button class="ctrl-btn active" data-interval="30">30s</button>
+    <button class="ctrl-btn" data-interval="60">60s</button>
+    <button id="refresh-btn">↺ Refresh</button>
+    <div id="countdown"></div>
+  </div>
+
+  <div id="treemap-wrap"><div id="treemap"></div></div>
+
+  <div id="legend">
+    <span>-3%</span><div id="legend-bar"></div><span>+3%</span>
+    <span style="margin-left:20px;color:var(--text-muted);">Tile size = approx S&P 500 sector weight</span>
+  </div>
+</div>
+
+<div id="tab-gamma" class="tab-panel">
+  <div id="gamma-controls">
+    <input id="gamma-ticker-input" type="text" placeholder="Enter ticker (e.g. SPY, AAPL, TSLA)" maxlength="8" />
+    <button id="gamma-load-btn">Load Chain</button>
+    <select id="gamma-expiry-select" disabled><option>Select expiration...</option></select>
+    <div id="gamma-status"><span class="live-dot offline" id="gamma-live-dot"></span><span id="gamma-status-text">Not connected</span></div>
+    <div id="gamma-spot"></div>
+  </div>
+
+  <div id="gamma-body">
+    <div id="gamma-heatmap-panel">
+      <div class="panel-header">
+        <span class="panel-title" id="gamma-panel-title">⚡ Net Gamma Exposure by Strike</span>
+        <div class="legend" style="display:flex;gap:12px;font-size:10px;color:var(--text-sec);">
+          <div class="leg-item" style="display:flex;align-items:center;gap:4px;"><div style="width:8px;height:8px;background:var(--green);border-radius:2px;"></div>Call GEX</div>
+          <div class="leg-item" style="display:flex;align-items:center;gap:4px;"><div style="width:8px;height:8px;background:var(--red);border-radius:2px;"></div>Put GEX</div>
+          <div class="leg-item" style="display:flex;align-items:center;gap:4px;"><div style="width:10px;height:10px;background:#ffea00;border-radius:2px;box-shadow:0 0 8px #ffea00;"></div>Gamma Magnet</div>
+        </div>
+      </div>
+      <div id="gamma-heatmap-scroll"><div id="gamma-empty-state">Enter a ticker above and click "Load Chain" to begin streaming live gamma exposure.</div></div>
+    </div>
+  </div>
+</div>
+
+<div id="news-ticker-wrap">
+  <div id="news-ticker-label">📰 LIVE NEWS</div>
+  <div id="news-ticker-track-wrap">
+    <div id="news-ticker-track"></div>
+  </div>
 </div>
 
 <script>
@@ -259,6 +368,22 @@ const TICKER_STOCKS = [
   "JPM","V","XOM","UNH","MA","COST","HD","PG","NFLX","JNJ",
   "CRM","BAC","ABBV","ORCL","MRK","CVX","KO","AMD","PEP","WMT",
 ];
+
+// Representative constituent stocks per sector — used to surface top gainers/losers inside each tile
+const SECTOR_STOCKS = {
+  XLK:  ["AAPL","MSFT","NVDA","AVGO","ORCL","CRM","ADBE","CSCO"],
+  XLF:  ["JPM","BAC","WFC","GS","MS","BRK.B","SCHW","AXP"],
+  XLV:  ["UNH","LLY","JNJ","ABBV","MRK","PFE","TMO","ABT"],
+  XLY:  ["AMZN","TSLA","HD","MCD","NKE","LOW","BKNG","SBUX"],
+  XLC:  ["META","GOOGL","NFLX","DIS","CMCSA","TMUS","VZ","T"],
+  XLI:  ["CAT","RTX","HON","UNP","BA","GE","DE","LMT"],
+  XLP:  ["PG","KO","PEP","WMT","COST","MDLZ","CL","PM"],
+  XLE:  ["XOM","CVX","COP","SLB","EOG","PSX","MPC","OXY"],
+  XLU:  ["NEE","DUK","SO","D","AEP","EXC","SRE","XEL"],
+  XLRE: ["PLD","AMT","EQIX","PSA","O","WELL","SPG","DLR"],
+  XLB:  ["LIN","APD","SHW","ECL","FCX","NEM","DD","NUE"],
+};
+const ALL_SECTOR_STOCKS = [...new Set(Object.values(SECTOR_STOCKS).flat())];
 
 // ─── State ───────────────────────────────────────────────────────────────────
 const state = {
@@ -429,7 +554,7 @@ async function init() {
 }
 
 async function refreshAll() {
-  const allSymbols = [...new Set([...SECTORS.map(s=>s.sym), ...INDEXES.map(s=>s.sym), ...TICKER_STOCKS])];
+  const allSymbols = [...new Set([...SECTORS.map(s=>s.sym), ...INDEXES.map(s=>s.sym), ...TICKER_STOCKS, ...ALL_SECTOR_STOCKS])];
   const quotes = await fetchQuotes(allSymbols);
   recordHistory(quotes);
   const spikes = detectVolumeSpikes(quotes);
@@ -460,6 +585,14 @@ function startDemo() {
       const base = _demoCumVolume[sym] || 0;
       const isSpike = Math.random() < 0.05;
       const inc = Math.round((isSpike ? 9 : 1) * (30000 + Math.random()*120000));
+      _demoCumVolume[sym] = base + inc;
+      quotes[sym] = { last: 20 + Math.random()*600, pctChange: parseFloat(pct.toFixed(2)), volume: _demoCumVolume[sym] };
+    }
+    for (const sym of ALL_SECTOR_STOCKS) {
+      if (quotes[sym]) continue; // already covered by TICKER_STOCKS overlap
+      const pct = (Math.random() - 0.45) * 5;
+      const base = _demoCumVolume[sym] || 0;
+      const inc = Math.round(30000 + Math.random()*120000);
       _demoCumVolume[sym] = base + inc;
       quotes[sym] = { last: 20 + Math.random()*600, pctChange: parseFloat(pct.toFixed(2)), volume: _demoCumVolume[sym] };
     }
@@ -511,6 +644,31 @@ function renderIndexStrip(quotes) {
 
 // ─── Color scale: red (-3%) → gray (0%) → green (+3%) ───────────────────────
 // ─── 1-Hour Sparkline (built live from polled price history) ────────────────
+// ─── Top Movers List (per sector tile) ───────────────────────────────────────
+// Shows top 5 gainers if sector is bullish, top 5 losers if sector is bearish
+function buildTopMovers(sectorSym, sectorPct, quotes, count = 5, compact = false) {
+  const stocks = SECTOR_STOCKS[sectorSym];
+  if (!stocks) return '';
+
+  const withQuotes = stocks
+    .map(sym => ({ sym, q: quotes[sym] }))
+    .filter(item => item.q && typeof item.q.pctChange === 'number');
+  if (!withQuotes.length) return '';
+
+  const sorted = sectorPct >= 0
+    ? withQuotes.sort((a,b) => b.q.pctChange - a.q.pctChange)  // biggest gainers first
+    : withQuotes.sort((a,b) => a.q.pctChange - b.q.pctChange); // biggest losers first
+
+  const top = sorted.slice(0, count);
+  const rows = top.map(({sym, q}) => {
+    const cls = q.pctChange >= 0 ? 'up' : 'down';
+    const sign = q.pctChange >= 0 ? '+' : '';
+    return `<div class="mover-row"><span class="mover-sym">${sym}</span><span class="mover-pct ${cls}">${sign}${q.pctChange.toFixed(2)}%</span></div>`;
+  }).join('');
+
+  return `<div class="tile-movers${compact ? ' compact' : ''}">${rows}</div>`;
+}
+
 function buildSparkline(sym, width, height, isUp) {
   const hist = state.history[sym];
   if (!hist || hist.length < 2) return '';
@@ -629,9 +787,13 @@ function renderTreemap(quotes) {
     const showName = t.w > 90 && t.h > 50;
     const showChart = t.w > 80 && t.h > 70;
     const showBias = t.w > 90 && t.h > 85;
+    const showMovers = state.view === 'sector' && t.w > 130 && t.h > 140;
+    const showCompactMovers = state.view === 'sector' && !showMovers && t.w > 60 && t.h > 55;
     const chartHtml = showChart ? buildSparkline(t.sym, t.w - 20, Math.min(34, t.h * 0.3), pct >= 0) : '';
     const bias = computeBias(t.sym, pct);
     const biasHtml = showBias ? `<div class="tile-bias ${bias.cls}">${bias.label} · ${bias.score}</div>` : '';
+    const moversHtml = showMovers ? buildTopMovers(t.sym, pct, quotes, 5) : '';
+    const compactMoversHtml = showCompactMovers ? buildTopMovers(t.sym, pct, quotes, t.h > 80 ? 3 : 2, true) : '';
     return `<div class="tile"
         style="left:${t.x}px;top:${t.y}px;width:${t.w-2}px;height:${t.h-2}px;background:${bg};"
         data-sym="${t.sym}" data-price="${t.quote.last}" data-pct="${pct}" data-vol="${t.quote.volume}"
@@ -642,6 +804,8 @@ function renderTreemap(quotes) {
       ${showName ? `<div class="tile-name">${t.name}</div>` : ''}
       ${chartHtml}
       ${biasHtml}
+      ${moversHtml}
+      ${compactMoversHtml}
     </div>`;
   }).join('');
 }
@@ -802,6 +966,242 @@ const _origRenderTreemap = renderTreemap;
 renderTreemap = function(quotes){ state.lastQuotes = quotes; _origRenderTreemap(quotes); };
 
 window.addEventListener('resize', () => { if (state.lastQuotes) renderTreemap(state.lastQuotes); });
+
+// ══════════════════════════════════════════════════════════════════════════
+// GAMMA HEATMAP TAB — Live single-ticker gamma exposure via Bullflow API
+// ══════════════════════════════════════════════════════════════════════════
+
+const BULLFLOW_API_KEY = "bull_a7f87532250a9db06fc774e6a85577b4b3a2a642cee9d513";
+const BULLFLOW_GEX_URL = "https://api.bullflow.io/v1/data/netgex";
+
+const gammaState = {
+  ticker: null,
+  spotPrice: 0,
+  asOf: null,
+  allStrikes: [],        // raw strikes array from Bullflow (all expirations)
+  expirations: [],       // unique expiration strings, sorted
+  selectedExpiry: null,
+  pollTimer: null,
+  pollIntervalMs: 15000,
+};
+
+// ─── Tab Switching ────────────────────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    $('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+// ─── Load Ticker Button ───────────────────────────────────────────────────
+$('gamma-load-btn').addEventListener('click', () => loadGammaTicker());
+$('gamma-ticker-input').addEventListener('keydown', e => { if (e.key === 'Enter') loadGammaTicker(); });
+$('gamma-expiry-select').addEventListener('change', () => {
+  gammaState.selectedExpiry = $('gamma-expiry-select').value;
+  renderGammaHeatmap();
+});
+
+async function loadGammaTicker() {
+  const raw = $('gamma-ticker-input').value.trim().toUpperCase();
+  if (!raw) return;
+  gammaState.ticker = raw;
+  clearInterval(gammaState.pollTimer);
+
+  setGammaStatus('Fetching gamma exposure for ' + raw + '...', false);
+  $('gamma-load-btn').disabled = true;
+  $('gamma-heatmap-scroll').innerHTML = `<div id="gamma-empty-state">Loading ${raw} gamma exposure...</div>`;
+
+  try {
+    await fetchGammaData();
+    $('gamma-panel-title').textContent = `⚡ ${raw} — Net Gamma Exposure by Strike`;
+    setGammaStatus('Connected — polling every 15s', true);
+
+    gammaState.pollTimer = setInterval(() => {
+      fetchGammaData().catch(err => setGammaStatus(err.message, false));
+    }, gammaState.pollIntervalMs);
+  } catch (err) {
+    setGammaStatus(err.message, false);
+    $('gamma-heatmap-scroll').innerHTML = `<div id="gamma-empty-state">⚠ ${err.message}</div>`;
+  } finally {
+    $('gamma-load-btn').disabled = false;
+  }
+}
+
+async function fetchGammaData() {
+  if (BULLFLOW_API_KEY === "PASTE_YOUR_BULLFLOW_API_KEY_HERE") {
+    throw new Error("No Bullflow API key configured. Add your key to the BULLFLOW_API_KEY constant.");
+  }
+  const url = `${BULLFLOW_GEX_URL}?key=${encodeURIComponent(BULLFLOW_API_KEY)}&ticker=${encodeURIComponent(gammaState.ticker)}`;
+  const res = await fetch(url);
+  if (!res.ok) {
+    const txt = await res.text();
+    throw new Error(`Bullflow GEX ${res.status}: ${txt.slice(0,200)}`);
+  }
+  const data = await res.json();
+  if (!data.strikes || !data.strikes.length) {
+    throw new Error(`No gamma data returned for ${gammaState.ticker}. Check the ticker has listed options.`);
+  }
+
+  gammaState.spotPrice = data.spot_price || 0;
+  gammaState.asOf = data.as_of;
+  gammaState.allStrikes = data.strikes;
+
+  // Unique expirations, sorted ascending (format: YYYYMMDD)
+  const uniqueExps = [...new Set(data.strikes.map(s => s.expiration))].sort();
+  gammaState.expirations = uniqueExps;
+
+  // Populate dropdown only if it changed (avoid resetting user's selection on every poll)
+  const sel = $('gamma-expiry-select');
+  const currentOptions = [...sel.options].map(o => o.value);
+  if (JSON.stringify(currentOptions) !== JSON.stringify(uniqueExps)) {
+    sel.innerHTML = uniqueExps.map(e => `<option value="${e}">${formatExpiry(e)}</option>`).join('');
+    sel.disabled = false;
+    gammaState.selectedExpiry = uniqueExps[0];
+  }
+
+  $('gamma-spot').textContent = `${gammaState.ticker}  $${gammaState.spotPrice.toFixed(2)}`;
+  $('gamma-spot').style.color = 'var(--text-primary)';
+
+  renderGammaHeatmap();
+}
+
+function formatExpiry(yyyymmdd) {
+  if (!yyyymmdd || yyyymmdd.length !== 8) return yyyymmdd;
+  const y = yyyymmdd.slice(0,4), m = yyyymmdd.slice(4,6), d = yyyymmdd.slice(6,8);
+  return `${y}-${m}-${d}`;
+}
+
+function setGammaStatus(text, connected) {
+  $('gamma-status-text').textContent = text;
+  $('gamma-live-dot').className = connected ? 'live-dot' : 'live-dot offline';
+}
+
+// ─── Render Heatmap for Selected Expiration ──────────────────────────────────
+function renderGammaHeatmap() {
+  const filtered = gammaState.allStrikes
+    .filter(s => s.expiration === gammaState.selectedExpiry)
+    .map(s => ({
+      strike: s.strike,
+      callGex: s.call_gex || 0,
+      putGex: s.put_gex || 0,
+      netGex: s.net_gex != null ? s.net_gex : (s.call_gex || 0) - (s.put_gex || 0),
+      callOI: s.call_oi || 0,
+      putOI: s.put_oi || 0,
+    }))
+    .sort((a,b) => b.strike - a.strike);
+
+  if (!filtered.length) {
+    $('gamma-heatmap-scroll').innerHTML = `<div id="gamma-empty-state">No strikes for this expiration.</div>`;
+    return;
+  }
+
+  const maxAbs = Math.max(...filtered.map(s => Math.abs(s.netGex)), 0.0001);
+  const magnetStrike = filtered.reduce((b,s) => Math.abs(s.netGex) > Math.abs(b.netGex) ? s : b, filtered[0]);
+  const spot = gammaState.spotPrice;
+  const strikeSpacing = filtered.length > 1 ? Math.abs(filtered[0].strike - filtered[1].strike) : 1;
+
+  let html = '';
+  let spotInserted = spot === 0;
+  for (const s of filtered) {
+    if (!spotInserted && s.strike <= spot) {
+      html += `<div class="spot-divider">SPOT $${spot.toFixed(2)}</div>`;
+      spotInserted = true;
+    }
+    const isMagnet = s.strike === magnetStrike.strike;
+    const isSpot = spot && Math.abs(s.strike - spot) < strikeSpacing / 2;
+    const barPct = Math.min(48, (Math.abs(s.netGex) / maxAbs) * 48);
+    const isPos = s.netGex >= 0;
+    const rowClass = ['gex-row', isSpot?'spot-strike':'', isMagnet?'magnet-strike':''].filter(Boolean).join(' ');
+    const barClass = ['gex-bar', isPos?'positive':'negative', isMagnet?'magnet-glow':''].filter(Boolean).join(' ');
+    const barColorStyle = isMagnet ? `color:${isPos?'#00ff9d':'#ff3b30'};background:${isPos?'#00ff9d':'#ff3b30'};` : '';
+    html += `<div class="${rowClass}">
+      <span class="gex-strike-label">${s.strike.toLocaleString()}</span>
+      <div class="gex-bar-wrap">
+        <div class="gex-bar-zero"></div>
+        <div class="${barClass}" style="width:${barPct.toFixed(1)}%;${barColorStyle}"></div>
+      </div>
+      <span class="gex-val" style="color:${isPos?'var(--green)':'var(--red)'}">${isPos?'+':''}${formatGex(s.netGex)}</span>
+      <span class="gex-oi">C:${s.callOI.toLocaleString()} P:${s.putOI.toLocaleString()}</span>
+      <span class="gex-tag" style="color:${isMagnet?(isPos?'#00ff9d':'#ff3b30'):'transparent'}">${isMagnet ? '● MAGNET' : ''}</span>
+    </div>`;
+  }
+  if (!spotInserted) html += `<div class="spot-divider">SPOT $${spot.toFixed(2)}</div>`;
+
+  $('gamma-heatmap-scroll').innerHTML = html;
+}
+
+function formatGex(val) {
+  const abs = Math.abs(val);
+  if (abs >= 1e9) return (val/1e9).toFixed(2) + 'B';
+  if (abs >= 1e6) return (val/1e6).toFixed(2) + 'M';
+  if (abs >= 1e3) return (val/1e3).toFixed(1) + 'K';
+  return val.toFixed(0);
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// LIVE NEWS TICKER (bottom, CNBC-style) — via Finnhub market news API
+// ══════════════════════════════════════════════════════════════════════════
+// NOTE: TastyTrade's public API does not offer a news endpoint, so this uses
+// Finnhub instead — free tier, simple key-based REST. Get a key at finnhub.io/register.
+const FINNHUB_API_KEY = "d9811vpr01qng2nq26o0d9811vpr01qng2nq26og";
+const FINNHUB_NEWS_URL = "https://finnhub.io/api/v1/news";
+const NEWS_REFRESH_MS = 5 * 60 * 1000; // news doesn't need second-by-second polling
+
+async function fetchNews() {
+  if (FINNHUB_API_KEY === "PASTE_YOUR_FINNHUB_API_KEY_HERE") {
+    renderNewsDemo();
+    return;
+  }
+  try {
+    const url = `${FINNHUB_NEWS_URL}?category=general&token=${FINNHUB_API_KEY}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Finnhub ${res.status}`);
+    const items = await res.json();
+    renderNewsTicker(items.slice(0, 25));
+  } catch (err) {
+    renderNewsDemo(); // fail gracefully — never leave the ticker empty
+  }
+}
+
+function renderNewsTicker(items) {
+  const track = $('news-ticker-track');
+  const html = items.map(item => {
+    const time = new Date(item.datetime * 1000).toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', hour12:true });
+    const symTag = item.related ? `<span class="news-sym">${item.related.split(',')[0]}</span>` : '';
+    return `<span class="news-item"><span class="news-time">${time}</span>${symTag}<span class="news-headline">${escapeHtml(item.headline)}</span></span>`;
+  }).join('');
+  track.innerHTML = html + html; // duplicate for seamless loop
+}
+
+function renderNewsDemo() {
+  const demoHeadlines = [
+    { sym: "AAPL", text: "Apple reportedly expanding custom silicon partnerships through 2031" },
+    { sym: "FED", text: "Fed officials signal data-dependent approach to next rate decision" },
+    { sym: "NVDA", text: "Semiconductor sector sees continued institutional inflows" },
+    { sym: "SPX", text: "S&P 500 hovers near key technical levels amid mixed earnings" },
+    { sym: "OIL", text: "Crude oil prices react to latest inventory data" },
+    { sym: "TSLA", text: "EV sector volatility continues as delivery estimates are revised" },
+    { sym: "MACRO", text: "Treasury yields fluctuate ahead of upcoming economic data releases" },
+    { sym: "JOBS", text: "Labor market data shows resilience despite rate environment" },
+  ];
+  const track = $('news-ticker-track');
+  const now = () => new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', hour12:true });
+  const html = demoHeadlines.map(h =>
+    `<span class="news-item"><span class="news-time">${now()}</span><span class="news-sym">${h.sym}</span><span class="news-headline">${h.text} (demo)</span></span>`
+  ).join('');
+  track.innerHTML = html + html;
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str || '';
+  return div.innerHTML;
+}
+
+fetchNews();
+setInterval(fetchNews, NEWS_REFRESH_MS);
 
 // ─── Boot ────────────────────────────────────────────────────────────────────
 init();
