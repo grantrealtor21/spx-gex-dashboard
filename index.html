@@ -27,6 +27,7 @@
   }
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
   html,body{height:100%;background:var(--bg-primary);color:var(--text-primary);font-family:var(--font);font-size:13px;-webkit-font-smoothing:antialiased;}
+  #tab-sector{display:flex;flex-direction:column;flex:1;overflow:hidden;}
   body{display:flex;flex-direction:column;min-height:100vh;}
 
   /* Ticker Tape */
@@ -72,34 +73,11 @@
   #market-status.closed{background:rgba(255,71,87,.1);color:var(--red);}
 
   /* Tabs */
-  #tab-nav{display:flex;gap:4px;padding:10px 24px 0;background:var(--bg-secondary);border-bottom:1px solid var(--border);flex-shrink:0;}
-  .tab-btn{padding:9px 18px;border:none;background:transparent;color:var(--text-sec);font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;}
-  .tab-btn:hover{color:var(--text-primary);}
-  .tab-btn.active{color:var(--text-primary);border-bottom-color:var(--accent);}
-  .tab-panel{display:none;flex-direction:column;flex:1;overflow:hidden;}
-  .tab-panel.active{display:flex;}
 
   /* Gamma Tab */
-  #gamma-controls{display:flex;align-items:center;gap:10px;padding:14px 24px;background:var(--bg-secondary);border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;}
-  #gamma-ticker-input{background:var(--bg-card);border:1px solid var(--border-bright);border-radius:8px;padding:9px 14px;color:var(--text-primary);font-family:var(--font-mono);font-size:13px;font-weight:600;width:220px;letter-spacing:.5px;text-transform:uppercase;}
-  #gamma-ticker-input:focus{outline:none;border-color:var(--accent);}
-  #gamma-ticker-input::placeholder{color:var(--text-muted);text-transform:none;font-weight:400;}
-  #gamma-load-btn{padding:9px 18px;border-radius:8px;border:1px solid var(--accent);background:rgba(59,130,246,.15);color:var(--accent);font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;}
-  #gamma-load-btn:hover{background:rgba(59,130,246,.25);}
-  #gamma-load-btn:disabled{opacity:.5;cursor:not-allowed;}
-  #gamma-expiry-select{background:var(--bg-card);border:1px solid var(--border-bright);border-radius:8px;padding:9px 12px;color:var(--text-primary);font-family:var(--font-mono);font-size:12px;cursor:pointer;}
-  #gamma-expiry-select:disabled{opacity:.5;cursor:not-allowed;}
-  #gamma-status{display:flex;align-items:center;font-size:11px;color:var(--text-sec);font-family:var(--font-mono);}
-  #gamma-spot{margin-left:auto;font-family:var(--font-mono);font-size:15px;font-weight:700;color:var(--text-primary);}
 
-  #gamma-body{flex:1;display:flex;overflow:hidden;padding:16px 24px;}
-  #gamma-heatmap-panel{flex:1;display:flex;flex-direction:column;background:var(--bg-card);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
   .panel-header{padding:12px 18px;background:var(--bg-elevated);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
   .panel-title{font-size:12px;font-weight:700;color:var(--text-primary);}
-  #gamma-heatmap-scroll{flex:1;overflow-y:auto;padding:14px 18px;}
-  #gamma-heatmap-scroll::-webkit-scrollbar{width:5px;}
-  #gamma-heatmap-scroll::-webkit-scrollbar-thumb{background:var(--border-bright);border-radius:3px;}
-  #gamma-empty-state{display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);font-size:13px;text-align:center;padding:40px;}
 
   .gex-row{display:flex;align-items:center;gap:10px;padding:3px 0;border-radius:6px;transition:background .15s;}
   .gex-row:hover{background:rgba(255,255,255,.03);}
@@ -155,8 +133,8 @@
   .tile-bias.bias-neutral{background:rgba(255,255,255,.1);color:#c8c8d0;}
 
   .tile-movers{margin-top:8px;width:88%;display:flex;flex-direction:column;gap:2px;background:rgba(0,0,0,.22);border-radius:6px;padding:6px 8px;backdrop-filter:blur(2px);}
-  .mover-row{display:flex;align-items:center;justify-content:space-between;font-family:var(--font-mono);font-size:9.5px;line-height:1.5;}
-  .mover-sym{font-weight:700;letter-spacing:.2px;text-shadow:0 1px 2px rgba(0,0,0,.5);}
+  .mover-row{display:flex;align-items:center;justify-content:center;gap:8px;font-family:var(--font-mono);font-size:9.5px;line-height:1.5;}
+  .mover-sym{font-weight:700;letter-spacing:.2px;text-shadow:0 1px 2px rgba(0,0,0,.5);min-width:34px;text-align:right;}
   .mover-pct{font-weight:600;}
   .mover-pct.up{color:#4dffc0;}
   .mover-pct.down{color:#ff8a94;}
@@ -224,6 +202,85 @@
   #error-box .err-title{font-size:14px;margin-bottom:8px;letter-spacing:.5px;font-weight:700;}
   #error-retry,#error-demo{margin-top:12px;margin-right:8px;padding:8px 22px;border-radius:8px;border:1px solid var(--red-dim);background:transparent;color:var(--red);font-family:var(--font);font-weight:600;cursor:pointer;font-size:11px;transition:all .15s;}
   #error-retry:hover,#error-demo:hover{background:rgba(255,71,87,.12);}
+
+  /* ══════════════════════════════════════════════════════════════════════
+     MOBILE OPTIMIZATION
+     ══════════════════════════════════════════════════════════════════════ */
+  html,body{overflow-x:hidden;}
+
+  @media (max-width: 768px) {
+    body{font-size:12px;}
+
+    /* Header — shrink and simplify */
+    #header{padding:8px 12px;}
+    .brand-text{font-size:13px;}
+    #header-right{gap:8px;font-size:9px;}
+    #market-status{padding:3px 7px;font-size:8px;}
+    #clock{display:none;} /* redundant with market status, saves space */
+
+    /* Top stock ticker — shorter, smaller text */
+    #ticker-wrap{height:30px;}
+    .ticker-item{padding:0 12px;font-size:10px;gap:4px;}
+
+    /* Index strip — smaller tiles, allow horizontal scroll */
+    .idx-tile{min-width:92px;padding:8px 10px;}
+    .idx-sym{font-size:8px;}
+    .idx-price{font-size:14px;}
+    .idx-chg{font-size:10px;}
+
+    /* Controls — compact, wrap cleanly */
+    #controls{padding:8px 12px;gap:6px;}
+    .ctrl-label{font-size:8px;}
+    .ctrl-btn{padding:5px 10px;font-size:10px;}
+    #refresh-btn{padding:5px 12px;font-size:10px;width:100%;margin-left:0;order:10;}
+    #countdown{font-size:9px;order:11;}
+
+    /* Treemap — reduce padding to maximize tile space */
+    #treemap-wrap{padding:8px;}
+    .tile-name{display:none;} /* saves vertical space on small tiles */
+    .tile-movers{width:94%;padding:4px 6px;}
+    .tile-bias{font-size:7px;padding:2px 6px;}
+
+    /* Legend — stack and shrink */
+    #legend{padding:8px 12px;font-size:9px;flex-wrap:wrap;gap:6px;}
+    #legend-bar{width:120px;}
+
+    /* News ticker — shorter */
+    #news-ticker-wrap{height:30px;}
+    #news-ticker-label{padding:0 10px;font-size:8px;}
+    .news-item{padding:0 14px;font-size:10px;}
+    .news-time{font-size:8px;}
+    .news-sym{font-size:8px;}
+
+    /* Volume alerts — full width, safe positioning */
+    #volume-alerts{left:10px;right:10px;bottom:56px;max-width:none;}
+    .vol-alert{padding:8px 10px;}
+    .va-title{font-size:11px;}
+    .va-sub{font-size:9px;}
+
+    /* History widget — adjust for small screens */
+    #history-toggle{left:10px;bottom:12px;padding:7px 12px;font-size:10px;}
+    #history-panel{left:10px;right:10px;width:auto;bottom:52px;max-height:60vh;}
+
+    /* Tooltip — cap width so it never overflows screen edge */
+    #tooltip{max-width:200px;font-size:10px;padding:10px 12px;}
+  }
+
+  @media (max-width: 420px) {
+    .brand-text{font-size:11px;}
+    #header-right{gap:6px;}
+    #live-label{display:none;} /* dot alone is enough signal at this size */
+    .idx-tile{min-width:80px;padding:6px 8px;}
+    .idx-price{font-size:12px;}
+    .ctrl-btn{padding:4px 8px;font-size:9px;}
+    #legend-bar{width:80px;}
+    #legend span:last-child{display:none;} /* hide the descriptive caption, keep scale */
+  }
+
+  /* Touch devices: tooltip needs tap-to-dismiss since there's no hover/mouseleave */
+  @media (hover: none) {
+    .tile:active{filter:brightness(1.3);}
+  }
 </style>
 </head>
 <body>
@@ -266,11 +323,6 @@
   </div>
 </div>
 
-<div id="tab-nav">
-  <button class="tab-btn active" data-tab="sector">Sector Heatmap</button>
-  <button class="tab-btn" data-tab="gamma">Gamma Heatmap</button>
-</div>
-
 <div id="tab-sector" class="tab-panel active">
   <div id="index-strip"></div>
 
@@ -278,9 +330,6 @@
     <span class="ctrl-label">View</span>
     <button class="ctrl-btn active" data-view="sector">Sectors</button>
     <button class="ctrl-btn" data-view="index">Indexes</button>
-    <span class="ctrl-label" style="margin-left:10px;">Size By</span>
-    <button class="ctrl-btn active" data-size="weight">Weight</button>
-    <button class="ctrl-btn" data-size="equal">Equal</button>
     <span class="ctrl-label" style="margin-left:10px;">Refresh</span>
     <button class="ctrl-btn" data-interval="15">15s</button>
     <button class="ctrl-btn active" data-interval="30">30s</button>
@@ -293,31 +342,7 @@
 
   <div id="legend">
     <span>-3%</span><div id="legend-bar"></div><span>+3%</span>
-    <span style="margin-left:20px;color:var(--text-muted);">Tile size = approx S&P 500 sector weight</span>
-  </div>
-</div>
-
-<div id="tab-gamma" class="tab-panel">
-  <div id="gamma-controls">
-    <input id="gamma-ticker-input" type="text" placeholder="Enter ticker (e.g. SPY, AAPL, TSLA)" maxlength="8" />
-    <button id="gamma-load-btn">Load Chain</button>
-    <select id="gamma-expiry-select" disabled><option>Select expiration...</option></select>
-    <div id="gamma-status"><span class="live-dot offline" id="gamma-live-dot"></span><span id="gamma-status-text">Not connected</span></div>
-    <div id="gamma-spot"></div>
-  </div>
-
-  <div id="gamma-body">
-    <div id="gamma-heatmap-panel">
-      <div class="panel-header">
-        <span class="panel-title" id="gamma-panel-title">⚡ Net Gamma Exposure by Strike</span>
-        <div class="legend" style="display:flex;gap:12px;font-size:10px;color:var(--text-sec);">
-          <div class="leg-item" style="display:flex;align-items:center;gap:4px;"><div style="width:8px;height:8px;background:var(--green);border-radius:2px;"></div>Call GEX</div>
-          <div class="leg-item" style="display:flex;align-items:center;gap:4px;"><div style="width:8px;height:8px;background:var(--red);border-radius:2px;"></div>Put GEX</div>
-          <div class="leg-item" style="display:flex;align-items:center;gap:4px;"><div style="width:10px;height:10px;background:#ffea00;border-radius:2px;box-shadow:0 0 8px #ffea00;"></div>Gamma Magnet</div>
-        </div>
-      </div>
-      <div id="gamma-heatmap-scroll"><div id="gamma-empty-state">Enter a ticker above and click "Load Chain" to begin streaming live gamma exposure.</div></div>
-    </div>
+    <span style="margin-left:20px;color:var(--text-muted);">Equal-sized tiles</span>
   </div>
 </div>
 
@@ -389,7 +414,7 @@ const ALL_SECTOR_STOCKS = [...new Set(Object.values(SECTOR_STOCKS).flat())];
 const state = {
   accessToken: null,
   view: 'sector',
-  sizeMode: 'weight',
+  sizeMode: 'equal',
   intervalSeconds: 30,
   countdownTimer: null,
   countdown: 0,
@@ -790,9 +815,9 @@ function renderTreemap(quotes) {
   const source = state.view === 'sector' ? SECTORS : INDEXES;
   const items = source.map(s => ({
     sym: s.sym, name: s.name,
-    value: state.sizeMode === 'weight' ? s.weight : 1,
+    value: 1, // equal-sized tiles so all boxes fit cleanly on screen
     quote: quotes[s.sym] || { last:0, pctChange:0, volume:0 },
-  })).sort((a,b) => b.value - a.value);
+  })).sort((a,b) => a.sym.localeCompare(b.sym));
 
   const laidOut = [];
   squarify(items, 0, 0, W, H, laidOut);
@@ -929,6 +954,11 @@ function positionTip(e){
 document.addEventListener('mousemove', e => { if(tooltip.style.display!=='none') positionTip(e); });
 window.showTip = showTip; window.hideTip = hideTip;
 
+// Touch devices don't fire mouseleave — tap anywhere outside a tile to dismiss the tooltip
+document.addEventListener('touchstart', e => {
+  if (tooltip.style.display !== 'none' && !e.target.closest('.tile')) hideTip();
+}, { passive: true });
+
 // ─── UI States ───────────────────────────────────────────────────────────────
 function showLoading(msg){ $('overlay').classList.remove('hidden'); $('spinner').style.display='block'; $('overlay-msg').textContent=msg; $('error-box').style.display='none'; }
 function showError(msg){ $('overlay').classList.remove('hidden'); $('spinner').style.display='none'; $('overlay-msg').textContent=''; $('error-box').style.display='block'; $('error-detail').textContent=msg; }
@@ -986,179 +1016,6 @@ const _origRenderTreemap = renderTreemap;
 renderTreemap = function(quotes){ state.lastQuotes = quotes; _origRenderTreemap(quotes); };
 
 window.addEventListener('resize', () => { if (state.lastQuotes) renderTreemap(state.lastQuotes); });
-
-// ══════════════════════════════════════════════════════════════════════════
-// GAMMA HEATMAP TAB — Live single-ticker gamma exposure via Bullflow API
-// ══════════════════════════════════════════════════════════════════════════
-
-const BULLFLOW_API_KEY = "bull_a7f87532250a9db06fc774e6a85577b4b3a2a642cee9d513";
-const BULLFLOW_GEX_URL = "https://bullflow-proxy.grantrealtor21.workers.dev";
-
-const gammaState = {
-  ticker: null,
-  spotPrice: 0,
-  asOf: null,
-  allStrikes: [],        // raw strikes array from Bullflow (all expirations)
-  expirations: [],       // unique expiration strings, sorted
-  selectedExpiry: null,
-  pollTimer: null,
-  pollIntervalMs: 15000,
-};
-
-// ─── Tab Switching ────────────────────────────────────────────────────────
-document.querySelectorAll('.tab-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    btn.classList.add('active');
-    $('tab-' + btn.dataset.tab).classList.add('active');
-  });
-});
-
-// ─── Load Ticker Button ───────────────────────────────────────────────────
-$('gamma-load-btn').addEventListener('click', () => loadGammaTicker());
-$('gamma-ticker-input').addEventListener('keydown', e => { if (e.key === 'Enter') loadGammaTicker(); });
-$('gamma-expiry-select').addEventListener('change', () => {
-  gammaState.selectedExpiry = $('gamma-expiry-select').value;
-  renderGammaHeatmap();
-});
-
-async function loadGammaTicker() {
-  const raw = $('gamma-ticker-input').value.trim().toUpperCase();
-  if (!raw) return;
-  gammaState.ticker = raw;
-  clearInterval(gammaState.pollTimer);
-
-  setGammaStatus('Fetching gamma exposure for ' + raw + '...', false);
-  $('gamma-load-btn').disabled = true;
-  $('gamma-heatmap-scroll').innerHTML = `<div id="gamma-empty-state">Loading ${raw} gamma exposure...</div>`;
-
-  try {
-    await fetchGammaData();
-    $('gamma-panel-title').textContent = `⚡ ${raw} — Net Gamma Exposure by Strike`;
-    setGammaStatus('Connected — polling every 15s', true);
-
-    gammaState.pollTimer = setInterval(() => {
-      fetchGammaData().catch(err => setGammaStatus(err.message, false));
-    }, gammaState.pollIntervalMs);
-  } catch (err) {
-    setGammaStatus(err.message, false);
-    $('gamma-heatmap-scroll').innerHTML = `<div id="gamma-empty-state">⚠ ${err.message}</div>`;
-  } finally {
-    $('gamma-load-btn').disabled = false;
-  }
-}
-
-async function fetchGammaData() {
-  if (BULLFLOW_API_KEY === "PASTE_YOUR_BULLFLOW_API_KEY_HERE") {
-    throw new Error("No Bullflow API key configured. Add your key to the BULLFLOW_API_KEY constant.");
-  }
-  const url = `${BULLFLOW_GEX_URL}?key=${encodeURIComponent(BULLFLOW_API_KEY)}&ticker=${encodeURIComponent(gammaState.ticker)}`;
-  const res = await fetch(url);
-  if (!res.ok) {
-    const txt = await res.text();
-    throw new Error(`Bullflow GEX ${res.status}: ${txt.slice(0,200)}`);
-  }
-  const data = await res.json();
-  if (!data.strikes || !data.strikes.length) {
-    throw new Error(`No gamma data returned for ${gammaState.ticker}. Check the ticker has listed options.`);
-  }
-
-  gammaState.spotPrice = data.spot_price || 0;
-  gammaState.asOf = data.as_of;
-  gammaState.allStrikes = data.strikes;
-
-  // Unique expirations, sorted ascending (format: YYYYMMDD)
-  const uniqueExps = [...new Set(data.strikes.map(s => s.expiration))].sort();
-  gammaState.expirations = uniqueExps;
-
-  // Populate dropdown only if it changed (avoid resetting user's selection on every poll)
-  const sel = $('gamma-expiry-select');
-  const currentOptions = [...sel.options].map(o => o.value);
-  if (JSON.stringify(currentOptions) !== JSON.stringify(uniqueExps)) {
-    sel.innerHTML = uniqueExps.map(e => `<option value="${e}">${formatExpiry(e)}</option>`).join('');
-    sel.disabled = false;
-    gammaState.selectedExpiry = uniqueExps[0];
-  }
-
-  $('gamma-spot').textContent = `${gammaState.ticker}  $${gammaState.spotPrice.toFixed(2)}`;
-  $('gamma-spot').style.color = 'var(--text-primary)';
-
-  renderGammaHeatmap();
-}
-
-function formatExpiry(yyyymmdd) {
-  if (!yyyymmdd || yyyymmdd.length !== 8) return yyyymmdd;
-  const y = yyyymmdd.slice(0,4), m = yyyymmdd.slice(4,6), d = yyyymmdd.slice(6,8);
-  return `${y}-${m}-${d}`;
-}
-
-function setGammaStatus(text, connected) {
-  $('gamma-status-text').textContent = text;
-  $('gamma-live-dot').className = connected ? 'live-dot' : 'live-dot offline';
-}
-
-// ─── Render Heatmap for Selected Expiration ──────────────────────────────────
-function renderGammaHeatmap() {
-  const filtered = gammaState.allStrikes
-    .filter(s => s.expiration === gammaState.selectedExpiry)
-    .map(s => ({
-      strike: s.strike,
-      callGex: s.call_gex || 0,
-      putGex: s.put_gex || 0,
-      netGex: s.net_gex != null ? s.net_gex : (s.call_gex || 0) - (s.put_gex || 0),
-      callOI: s.call_oi || 0,
-      putOI: s.put_oi || 0,
-    }))
-    .sort((a,b) => b.strike - a.strike);
-
-  if (!filtered.length) {
-    $('gamma-heatmap-scroll').innerHTML = `<div id="gamma-empty-state">No strikes for this expiration.</div>`;
-    return;
-  }
-
-  const maxAbs = Math.max(...filtered.map(s => Math.abs(s.netGex)), 0.0001);
-  const magnetStrike = filtered.reduce((b,s) => Math.abs(s.netGex) > Math.abs(b.netGex) ? s : b, filtered[0]);
-  const spot = gammaState.spotPrice;
-  const strikeSpacing = filtered.length > 1 ? Math.abs(filtered[0].strike - filtered[1].strike) : 1;
-
-  let html = '';
-  let spotInserted = spot === 0;
-  for (const s of filtered) {
-    if (!spotInserted && s.strike <= spot) {
-      html += `<div class="spot-divider">SPOT $${spot.toFixed(2)}</div>`;
-      spotInserted = true;
-    }
-    const isMagnet = s.strike === magnetStrike.strike;
-    const isSpot = spot && Math.abs(s.strike - spot) < strikeSpacing / 2;
-    const barPct = Math.min(48, (Math.abs(s.netGex) / maxAbs) * 48);
-    const isPos = s.netGex >= 0;
-    const rowClass = ['gex-row', isSpot?'spot-strike':'', isMagnet?'magnet-strike':''].filter(Boolean).join(' ');
-    const barClass = ['gex-bar', isPos?'positive':'negative', isMagnet?'magnet-glow':''].filter(Boolean).join(' ');
-    const barColorStyle = isMagnet ? `color:${isPos?'#00ff9d':'#ff3b30'};background:${isPos?'#00ff9d':'#ff3b30'};` : '';
-    html += `<div class="${rowClass}">
-      <span class="gex-strike-label">${s.strike.toLocaleString()}</span>
-      <div class="gex-bar-wrap">
-        <div class="gex-bar-zero"></div>
-        <div class="${barClass}" style="width:${barPct.toFixed(1)}%;${barColorStyle}"></div>
-      </div>
-      <span class="gex-val" style="color:${isPos?'var(--green)':'var(--red)'}">${isPos?'+':''}${formatGex(s.netGex)}</span>
-      <span class="gex-oi">C:${s.callOI.toLocaleString()} P:${s.putOI.toLocaleString()}</span>
-      <span class="gex-tag" style="color:${isMagnet?(isPos?'#00ff9d':'#ff3b30'):'transparent'}">${isMagnet ? '● MAGNET' : ''}</span>
-    </div>`;
-  }
-  if (!spotInserted) html += `<div class="spot-divider">SPOT $${spot.toFixed(2)}</div>`;
-
-  $('gamma-heatmap-scroll').innerHTML = html;
-}
-
-function formatGex(val) {
-  const abs = Math.abs(val);
-  if (abs >= 1e9) return (val/1e9).toFixed(2) + 'B';
-  if (abs >= 1e6) return (val/1e6).toFixed(2) + 'M';
-  if (abs >= 1e3) return (val/1e3).toFixed(1) + 'K';
-  return val.toFixed(0);
-}
 
 // ══════════════════════════════════════════════════════════════════════════
 // LIVE NEWS TICKER (bottom, CNBC-style) — via Finnhub market news API
