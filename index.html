@@ -87,6 +87,51 @@
   .tile-chg{font-weight:700;font-family:var(--font-mono);}
   .tile-name{font-size:9px;opacity:.8;font-weight:500;}
   .tile-chart{margin-top:6px;opacity:.9;pointer-events:none;}
+  .tile-bias{margin-top:5px;padding:2px 8px;border-radius:20px;font-size:8px;font-weight:700;letter-spacing:.4px;font-family:var(--font-mono);}
+  .tile-bias.bias-bull{background:rgba(0,214,143,.18);color:#4dffc0;}
+  .tile-bias.bias-bear{background:rgba(255,71,87,.18);color:#ff8a94;}
+  .tile-bias.bias-neutral{background:rgba(255,255,255,.1);color:#c8c8d0;}
+
+  /* Volume Spike Alerts (bottom-left popup stack) */
+  #volume-alerts{position:fixed;bottom:66px;left:20px;z-index:150;display:flex;flex-direction:column-reverse;gap:8px;max-width:320px;}
+  .vol-alert{display:flex;align-items:center;gap:10px;background:var(--bg-elevated);border:1px solid var(--border-bright);border-left:3px solid #ffb020;border-radius:10px;padding:10px 12px;box-shadow:0 8px 30px rgba(0,0,0,.6);animation:slide-in .25s ease;}
+  .vol-alert.fade-out{animation:fade-out .3s ease forwards;}
+  @keyframes slide-in{from{opacity:0;transform:translateX(-16px);}to{opacity:1;transform:translateX(0);}}
+  @keyframes fade-out{to{opacity:0;transform:translateX(-16px);}}
+  .va-icon{font-size:16px;flex-shrink:0;}
+  .va-body{flex:1;min-width:0;}
+  .va-title{font-size:12px;font-weight:700;font-family:var(--font-mono);letter-spacing:.2px;}
+  .va-title .va-mult{color:#ffb020;}
+  .va-sub{font-size:10px;color:var(--text-sec);margin-top:2px;}
+  .va-sub .up{color:var(--green);font-weight:600;}
+  .va-sub .down{color:var(--red);font-weight:600;}
+  .va-close{background:none;border:none;color:var(--text-muted);font-size:16px;cursor:pointer;flex-shrink:0;line-height:1;padding:0 2px;}
+  .va-close:hover{color:var(--text-primary);}
+
+  /* Alert History Toggle + Panel (bottom-left, above the live alert stack) */
+  #history-toggle{position:fixed;bottom:20px;left:20px;z-index:151;display:flex;align-items:center;gap:6px;padding:9px 14px;border-radius:24px;border:1px solid var(--border-bright);background:var(--bg-elevated);color:var(--text-sec);font-family:var(--font);font-size:11px;font-weight:600;cursor:pointer;box-shadow:0 6px 24px rgba(0,0,0,.5);transition:all .15s;}
+  #history-toggle:hover{border-color:var(--accent);color:var(--text-primary);}
+  #history-badge{display:none;align-items:center;justify-content:center;min-width:16px;height:16px;padding:0 4px;border-radius:10px;background:var(--accent);color:#fff;font-size:9px;font-weight:700;font-family:var(--font-mono);}
+
+  #history-panel{position:fixed;bottom:66px;left:20px;width:300px;max-height:400px;background:var(--bg-elevated);border:1px solid var(--border-bright);border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.6);z-index:151;display:flex;flex-direction:column;opacity:0;pointer-events:none;transform:translateY(8px);transition:all .2s ease;overflow:hidden;}
+  #history-panel.open{opacity:1;pointer-events:auto;transform:translateY(0);}
+  #history-header{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;letter-spacing:.3px;color:var(--text-primary);}
+  #history-header button{background:none;border:none;color:var(--text-muted);font-size:16px;cursor:pointer;line-height:1;}
+  #history-header button:hover{color:var(--text-primary);}
+  #history-list{overflow-y:auto;padding:6px;}
+  #history-list::-webkit-scrollbar{width:4px;}
+  #history-list::-webkit-scrollbar-thumb{background:var(--border-bright);border-radius:2px;}
+  .history-empty{padding:24px 14px;text-align:center;color:var(--text-muted);font-size:11px;}
+  .history-item{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:8px;transition:background .15s;}
+  .history-item:hover{background:rgba(255,255,255,.04);}
+  .hi-left{display:flex;align-items:center;gap:8px;}
+  .hi-sym{font-family:var(--font-mono);font-weight:700;font-size:12px;}
+  .hi-mult{font-family:var(--font-mono);font-size:10px;color:#ffb020;font-weight:600;}
+  .hi-right{display:flex;flex-direction:column;align-items:flex-end;gap:1px;}
+  .hi-pct{font-family:var(--font-mono);font-size:10px;font-weight:600;}
+  .hi-pct.up{color:var(--green);}
+  .hi-pct.down{color:var(--red);}
+  .hi-time{font-size:9px;color:var(--text-muted);font-family:var(--font-mono);}
 
   /* Legend */
   #legend{display:flex;align-items:center;gap:10px;padding:10px 24px;background:var(--bg-secondary);border-top:1px solid var(--border);flex-shrink:0;font-size:10px;color:var(--text-sec);font-family:var(--font-mono);}
@@ -124,6 +169,18 @@
 </div>
 
 <div id="tooltip"></div>
+<div id="volume-alerts"></div>
+
+<button id="history-toggle" onclick="toggleHistory()">
+  🕐 Alerts <span id="history-badge">0</span>
+</button>
+<div id="history-panel">
+  <div id="history-header">
+    <span>Recent Volume Spikes</span>
+    <button onclick="toggleHistory()">×</button>
+  </div>
+  <div id="history-list"></div>
+</div>
 
 <div id="ticker-wrap"><div id="ticker-track"></div></div>
 
@@ -212,10 +269,17 @@ const state = {
   countdownTimer: null,
   countdown: 0,
   demo: false,
-  history: {}, // { SYM: [{t: timestamp, p: price}, ...] } — rolling 1hr window
+  history: {},       // { SYM: [{t, p}, ...] } — rolling 1hr price window
+  volDeltas: {},      // { SYM: [{t, delta}, ...] } — recent volume-per-interval samples
+  lastVolume: {},     // { SYM: cumulativeVolumeAtLastPoll }
+  activeAlerts: [],
+  alertHistory: [], // up to 30 most recent spike records, newest first
+  historyOpen: false,
 };
 
 const ONE_HOUR_MS = 60 * 60 * 1000;
+const VOL_SPIKE_MULTIPLIER = 2.8;  // flag if interval volume > 2.8x its recent average
+const VOL_BASELINE_SAMPLES = 8;    // how many past intervals to average for baseline
 
 function recordHistory(quotes) {
   const now = Date.now();
@@ -225,9 +289,68 @@ function recordHistory(quotes) {
     if (!q || !q.last) continue;
     if (!state.history[sym]) state.history[sym] = [];
     state.history[sym].push({ t: now, p: q.last });
-    // Prune anything older than 1 hour
     state.history[sym] = state.history[sym].filter(pt => now - pt.t <= ONE_HOUR_MS);
   }
+}
+
+// ─── Volume Spike Detection ──────────────────────────────────────────────────
+// Tracks per-interval volume (delta between polls) and flags spikes vs recent baseline
+function detectVolumeSpikes(quotes) {
+  const trackedSymbols = [...new Set([...SECTORS.map(s=>s.sym), ...INDEXES.map(s=>s.sym), ...TICKER_STOCKS])];
+  const spikes = [];
+
+  for (const sym of trackedSymbols) {
+    const q = quotes[sym];
+    if (!q || !q.volume) continue;
+    const currentVol = q.volume;
+    const prevVol = state.lastVolume[sym];
+    state.lastVolume[sym] = currentVol;
+    if (prevVol == null) continue; // first sample — no delta yet
+
+    let delta = currentVol - prevVol;
+    if (delta < 0) delta = currentVol; // session/day rollover — treat as fresh count
+    if (delta <= 0) continue;
+
+    if (!state.volDeltas[sym]) state.volDeltas[sym] = [];
+    const history = state.volDeltas[sym];
+
+    // Compute baseline from prior samples BEFORE adding the current one
+    if (history.length >= 3) {
+      const baseline = history.slice(-VOL_BASELINE_SAMPLES).reduce((s,d)=>s+d,0) / Math.min(history.length, VOL_BASELINE_SAMPLES);
+      if (baseline > 0 && delta > baseline * VOL_SPIKE_MULTIPLIER) {
+        spikes.push({ sym, delta, baseline, multiple: parseFloat((delta/baseline).toFixed(1)), pctChange: q.pctChange });
+      }
+    }
+
+    history.push(delta);
+    if (history.length > VOL_BASELINE_SAMPLES * 2) history.shift();
+  }
+  return spikes;
+}
+
+// ─── Technical Bias Score (momentum indicator — NOT a win-rate guarantee) ────
+// Combines short-term price trend slope + magnitude of change into a directional score.
+function computeBias(sym, pctChange) {
+  const hist = state.history[sym];
+  let trendScore = 0;
+
+  if (hist && hist.length >= 3) {
+    const recent = hist.slice(-6); // last ~6 samples
+    const first = recent[0].p, last = recent[recent.length-1].p;
+    const slopePct = first ? ((last - first) / first) * 100 : 0;
+    trendScore = slopePct;
+  }
+
+  // Blend intraday % change with recent slope, weight toward slope (more responsive)
+  const combined = (pctChange * 0.4) + (trendScore * 0.6);
+  const score = Math.max(0, Math.min(100, 50 + combined * 12)); // map to 0-100 scale
+
+  let label, cls;
+  if (score >= 65) { label = 'BULLISH BIAS'; cls = 'bias-bull'; }
+  else if (score <= 35) { label = 'BEARISH BIAS'; cls = 'bias-bear'; }
+  else { label = 'NEUTRAL'; cls = 'bias-neutral'; }
+
+  return { label, cls, score: Math.round(score) };
 }
 
 const $ = id => document.getElementById(id);
@@ -309,6 +432,8 @@ async function refreshAll() {
   const allSymbols = [...new Set([...SECTORS.map(s=>s.sym), ...INDEXES.map(s=>s.sym), ...TICKER_STOCKS])];
   const quotes = await fetchQuotes(allSymbols);
   recordHistory(quotes);
+  const spikes = detectVolumeSpikes(quotes);
+  spikes.forEach(showVolumeAlert);
   renderIndexStrip(quotes);
   renderTreemap(quotes);
   renderTicker(quotes);
@@ -316,6 +441,7 @@ async function refreshAll() {
 }
 
 // ─── Demo Mode (fallback if no credentials / API blocked) ───────────────────
+const _demoCumVolume = {};
 function startDemo() {
   state.demo = true;
   hideOverlay();
@@ -323,13 +449,23 @@ function startDemo() {
     const quotes = {};
     for (const s of [...SECTORS, ...INDEXES]) {
       const pct = (Math.random() - 0.5) * 4;
-      quotes[s.sym] = { last: 50 + Math.random()*400, pctChange: parseFloat(pct.toFixed(2)), volume: Math.round(Math.random()*5e6) };
+      const base = _demoCumVolume[s.sym] || 0;
+      const isSpike = Math.random() < 0.07;
+      const inc = Math.round((isSpike ? 8 : 1) * (50000 + Math.random()*150000));
+      _demoCumVolume[s.sym] = base + inc;
+      quotes[s.sym] = { last: 50 + Math.random()*400, pctChange: parseFloat(pct.toFixed(2)), volume: _demoCumVolume[s.sym] };
     }
     for (const sym of TICKER_STOCKS) {
       const pct = (Math.random() - 0.45) * 5;
-      quotes[sym] = { last: 20 + Math.random()*600, pctChange: parseFloat(pct.toFixed(2)), volume: Math.round(Math.random()*3e7) };
+      const base = _demoCumVolume[sym] || 0;
+      const isSpike = Math.random() < 0.05;
+      const inc = Math.round((isSpike ? 9 : 1) * (30000 + Math.random()*120000));
+      _demoCumVolume[sym] = base + inc;
+      quotes[sym] = { last: 20 + Math.random()*600, pctChange: parseFloat(pct.toFixed(2)), volume: _demoCumVolume[sym] };
     }
     recordHistory(quotes);
+    const spikes = detectVolumeSpikes(quotes);
+    spikes.forEach(showVolumeAlert);
     renderIndexStrip(quotes);
     renderTreemap(quotes);
     renderTicker(quotes);
@@ -492,15 +628,20 @@ function renderTreemap(quotes) {
     const chgSize = Math.max(10, Math.min(18, fontScale/8));
     const showName = t.w > 90 && t.h > 50;
     const showChart = t.w > 80 && t.h > 70;
+    const showBias = t.w > 90 && t.h > 85;
     const chartHtml = showChart ? buildSparkline(t.sym, t.w - 20, Math.min(34, t.h * 0.3), pct >= 0) : '';
+    const bias = computeBias(t.sym, pct);
+    const biasHtml = showBias ? `<div class="tile-bias ${bias.cls}">${bias.label} · ${bias.score}</div>` : '';
     return `<div class="tile"
         style="left:${t.x}px;top:${t.y}px;width:${t.w-2}px;height:${t.h-2}px;background:${bg};"
         data-sym="${t.sym}" data-price="${t.quote.last}" data-pct="${pct}" data-vol="${t.quote.volume}"
+        data-bias-label="${bias.label}" data-bias-score="${bias.score}"
         onmouseenter="showTip(event,this)" onmouseleave="hideTip()">
       <div class="tile-sym" style="font-size:${symSize}px">${t.sym}</div>
       <div class="tile-chg" style="font-size:${chgSize}px">${sign}${pct.toFixed(2)}%</div>
       ${showName ? `<div class="tile-name">${t.name}</div>` : ''}
       ${chartHtml}
+      ${biasHtml}
     </div>`;
   }).join('');
 }
@@ -509,15 +650,93 @@ function renderTreemap(quotes) {
 const tooltip = $('tooltip');
 function showTip(e, el) {
   const sym = el.dataset.sym, price = parseFloat(el.dataset.price), pct = parseFloat(el.dataset.pct), vol = parseInt(el.dataset.vol);
+  const biasLabel = el.dataset.biasLabel, biasScore = el.dataset.biasScore;
   tooltip.innerHTML = `
     <div class="tt-sym">${sym}</div>
     <div class="tt-row"><span class="tt-label">Price</span><span>$${price.toFixed(2)}</span></div>
     <div class="tt-row"><span class="tt-label">Change</span><span style="color:${pct>=0?'#10d488':'#f04155'}">${pct>=0?'+':''}${pct.toFixed(2)}%</span></div>
-    <div class="tt-row"><span class="tt-label">Volume</span><span>${vol.toLocaleString()}</span></div>`;
+    <div class="tt-row"><span class="tt-label">Volume</span><span>${vol.toLocaleString()}</span></div>
+    ${biasLabel ? `<div class="tt-row"><span class="tt-label">Signal</span><span>${biasLabel} (${biasScore})</span></div>
+    <div style="margin-top:6px;font-size:8px;color:var(--text-muted);line-height:1.4;">Technical momentum score, not a win-rate guarantee.</div>` : ''}`;
   tooltip.style.display='block';
   positionTip(e);
 }
 function hideTip(){ tooltip.style.display='none'; }
+
+// ─── Volume Spike Alert Popup (bottom-left, CNBC-breaking-news style) ───────
+function showVolumeAlert(spike) {
+  const container = $('volume-alerts');
+  const now = Date.now();
+  const id = 'va-' + spike.sym + '-' + now;
+  const cls = spike.pctChange >= 0 ? 'up' : 'down';
+  const sign = spike.pctChange >= 0 ? '+' : '';
+  const el = document.createElement('div');
+  el.className = 'vol-alert';
+  el.id = id;
+  el.innerHTML = `
+    <div class="va-icon">⚡</div>
+    <div class="va-body">
+      <div class="va-title">${spike.sym} <span class="va-mult">${spike.multiple}x</span> VOLUME</div>
+      <div class="va-sub">Unusual activity detected · <span class="${cls}">${sign}${spike.pctChange.toFixed(2)}%</span></div>
+    </div>
+    <button class="va-close" onclick="document.getElementById('${id}').remove()">×</button>`;
+  container.prepend(el);
+
+  // Record into rolling history (max 30, newest first)
+  state.alertHistory.unshift({ ...spike, t: now });
+  if (state.alertHistory.length > 30) state.alertHistory.pop();
+  renderAlertHistory();
+  $('history-badge').textContent = state.alertHistory.length;
+  $('history-badge').style.display = 'flex';
+
+  // Auto-dismiss after 15s
+  setTimeout(() => { const e = document.getElementById(id); if (e) { e.classList.add('fade-out'); setTimeout(()=>e.remove(), 300); } }, 15000);
+
+  // Cap stack at 5 visible alerts
+  const all = container.querySelectorAll('.vol-alert');
+  if (all.length > 5) all[all.length-1].remove();
+}
+
+// ─── Alert History Panel ──────────────────────────────────────────────────────
+function toggleHistory() {
+  state.historyOpen = !state.historyOpen;
+  $('history-panel').classList.toggle('open', state.historyOpen);
+}
+window.toggleHistory = toggleHistory;
+
+function renderAlertHistory() {
+  const list = $('history-list');
+  if (!state.alertHistory.length) {
+    list.innerHTML = `<div class="history-empty">No spikes detected yet this session.</div>`;
+    return;
+  }
+  list.innerHTML = state.alertHistory.map(a => {
+    const cls = a.pctChange >= 0 ? 'up' : 'down';
+    const sign = a.pctChange >= 0 ? '+' : '';
+    return `<div class="history-item">
+      <div class="hi-left">
+        <span class="hi-sym">${a.sym}</span>
+        <span class="hi-mult">${a.multiple}x</span>
+      </div>
+      <div class="hi-right">
+        <span class="hi-pct ${cls}">${sign}${a.pctChange.toFixed(2)}%</span>
+        <span class="hi-time">${_timeAgo(a.t)}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function _timeAgo(ts) {
+  const secs = Math.floor((Date.now() - ts) / 1000);
+  if (secs < 60) return `${secs}s ago`;
+  const mins = Math.floor(secs / 60);
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  return `${hrs}h ago`;
+}
+// Refresh relative timestamps in the history panel every 10s while open
+setInterval(() => { if (state.historyOpen) renderAlertHistory(); }, 10000);
+
 function positionTip(e){
   const x=e.clientX+12, y=e.clientY-20;
   tooltip.style.left = (x+tooltip.offsetWidth>window.innerWidth ? x-tooltip.offsetWidth-24 : x)+'px';
