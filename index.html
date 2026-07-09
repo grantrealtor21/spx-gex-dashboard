@@ -364,7 +364,7 @@ const INDEXES = [
 
 // Top stocks shown in the scrolling ticker tape (CNBC-style)
 const TICKER_STOCKS = [
-  "AAPL","MSFT","NVDA","GOOGL","AMZN","META","TSLA","AVGO","BRK.B","LLY",
+  "AAPL","MSFT","NVDA","GOOGL","AMZN","META","TSLA","AVGO","BRK/B","LLY",
   "JPM","V","XOM","UNH","MA","COST","HD","PG","NFLX","JNJ",
   "CRM","BAC","ABBV","ORCL","MRK","CVX","KO","AMD","PEP","WMT",
 ];
@@ -372,7 +372,7 @@ const TICKER_STOCKS = [
 // Representative constituent stocks per sector — used to surface top gainers/losers inside each tile
 const SECTOR_STOCKS = {
   XLK:  ["AAPL","MSFT","NVDA","AVGO","ORCL","CRM","ADBE","CSCO"],
-  XLF:  ["JPM","BAC","WFC","GS","MS","BRK.B","SCHW","AXP"],
+  XLF:  ["JPM","BAC","WFC","GS","MS","BRK/B","SCHW","AXP"],
   XLV:  ["UNH","LLY","JNJ","ABBV","MRK","PFE","TMO","ABT"],
   XLY:  ["AMZN","TSLA","HD","MCD","NKE","LOW","BKNG","SBUX"],
   XLC:  ["META","GOOGL","NFLX","DIS","CMCSA","TMUS","VZ","T"],
@@ -520,22 +520,42 @@ async function getAccessToken() {
 
 // ─── Quotes ──────────────────────────────────────────────────────────────────
 async function fetchQuotes(symbols) {
-  const url = `${TT_QUOTES_URL}?equity=${symbols.join(',')}`;
-  const res = await fetch(url, {
-    headers: { "Authorization": `Bearer ${state.accessToken}` },
-  });
-  if (!res.ok) {
-    const txt = await res.text();
-    throw new Error(`Quotes failed (${res.status}): ${txt.slice(0,200)}`);
+  // Dedupe and batch into chunks — TastyTrade's market-data endpoint rejects overly long symbol lists (400 Bad Request)
+  const uniqueSymbols = [...new Set(symbols)];
+  const CHUNK_SIZE = 40;
+  const chunks = [];
+  for (let i = 0; i < uniqueSymbols.length; i += CHUNK_SIZE) {
+    chunks.push(uniqueSymbols.slice(i, i + CHUNK_SIZE));
   }
-  const data = await res.json();
-  const items = data.data?.items || data.items || [];
+
   const map = {};
-  for (const item of items) {
-    const last = parseFloat(item.last || item.close || item.mark || 0);
-    const prevClose = parseFloat(item['prev-close'] || item.prevClose || item['closing-price'] || 0);
-    const pctChange = prevClose ? ((last - prevClose) / prevClose) * 100 : (item['percent-change'] ? parseFloat(item['percent-change']) : 0);
-    map[item.symbol] = { last, pctChange: parseFloat(pctChange.toFixed(2)), volume: item.volume || 0 };
+  for (const chunk of chunks) {
+    try {
+      const url = `${TT_QUOTES_URL}?equity=${chunk.map(encodeURIComponent).join(',')}`;
+      const res = await fetch(url, {
+        headers: { "Authorization": `Bearer ${state.accessToken}` },
+      });
+      if (!res.ok) {
+        const txt = await res.text();
+        console.warn(`Quote chunk failed (${res.status}) for [${chunk.join(',')}]: ${txt.slice(0,200)}`);
+        continue; // skip this batch, keep going with the rest
+      }
+      const data = await res.json();
+      const items = data.data?.items || data.items || [];
+      for (const item of items) {
+        const last = parseFloat(item.last || item.close || item.mark || 0);
+        const prevClose = parseFloat(item['prev-close'] || item.prevClose || item['closing-price'] || 0);
+        const pctChange = prevClose ? ((last - prevClose) / prevClose) * 100 : (item['percent-change'] ? parseFloat(item['percent-change']) : 0);
+        map[item.symbol] = { last, pctChange: parseFloat(pctChange.toFixed(2)), volume: item.volume || 0 };
+      }
+    } catch (chunkErr) {
+      console.warn('Quote chunk error:', chunkErr.message);
+      // continue to next chunk rather than failing the whole fetch
+    }
+  }
+
+  if (Object.keys(map).length === 0) {
+    throw new Error('All quote batches failed — check network/auth.');
   }
   return map;
 }
