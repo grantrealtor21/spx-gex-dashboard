@@ -31,20 +31,8 @@
   body{display:flex;flex-direction:column;min-height:100vh;}
 
   /* Ticker Tape */
-  #ticker-wrap{background:#000;border-bottom:1px solid var(--border);overflow:hidden;flex-shrink:0;position:relative;height:38px;}
-  #ticker-wrap::before,#ticker-wrap::after{content:'';position:absolute;top:0;bottom:0;width:40px;z-index:2;pointer-events:none;}
-  #ticker-wrap::before{left:0;background:linear-gradient(90deg,#000 20%,transparent);}
-  #ticker-wrap::after{right:0;background:linear-gradient(270deg,#000 20%,transparent);}
-  #ticker-track{display:flex;align-items:center;height:100%;white-space:nowrap;animation:ticker-scroll 60s linear infinite;width:max-content;}
-  #ticker-track:hover{animation-play-state:paused;}
-  @keyframes ticker-scroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
-  .ticker-item{display:inline-flex;align-items:center;gap:7px;padding:0 20px;font-family:var(--font-mono);font-size:12px;border-right:1px solid var(--border);}
-  .ticker-sym{font-weight:700;color:var(--text-primary);letter-spacing:.3px;}
-  .ticker-price{color:var(--text-sec);}
-  .ticker-chg{font-weight:600;display:flex;align-items:center;gap:2px;}
-  .ticker-chg.up{color:var(--green);}
-  .ticker-chg.down{color:var(--red);}
-  .ticker-arrow{font-size:9px;}
+  /* TradingView Ticker Tape widget wrapper */
+  #tv-ticker-tape{flex-shrink:0;border-bottom:1px solid var(--border);}
 
   /* News Ticker (bottom, CNBC-style) */
   #news-ticker-wrap{display:flex;align-items:center;background:#000;border-top:1px solid var(--border);flex-shrink:0;height:36px;}
@@ -219,8 +207,7 @@
     #clock{display:none;} /* redundant with market status, saves space */
 
     /* Top stock ticker — shorter, smaller text */
-    #ticker-wrap{height:30px;}
-    .ticker-item{padding:0 12px;font-size:10px;gap:4px;}
+    #tv-ticker-tape{font-size:11px;}
 
     /* Index strip — smaller tiles, allow horizontal scroll */
     .idx-tile{min-width:92px;padding:8px 10px;}
@@ -310,7 +297,50 @@
   <div id="history-list"></div>
 </div>
 
-<div id="ticker-wrap"><div id="ticker-track"></div></div>
+<div class="tradingview-widget-container" id="tv-ticker-tape">
+  <div class="tradingview-widget-container__widget"></div>
+</div>
+<script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+{
+  "symbols": [
+    {"proName": "NASDAQ:AAPL", "title": "Apple"},
+    {"proName": "NASDAQ:MSFT", "title": "Microsoft"},
+    {"proName": "NASDAQ:NVDA", "title": "Nvidia"},
+    {"proName": "NASDAQ:GOOGL", "title": "Google"},
+    {"proName": "NASDAQ:AMZN", "title": "Amazon"},
+    {"proName": "NASDAQ:META", "title": "Meta"},
+    {"proName": "NASDAQ:TSLA", "title": "Tesla"},
+    {"proName": "NASDAQ:AVGO", "title": "Broadcom"},
+    {"proName": "NYSE:BRK.B", "title": "Berkshire"},
+    {"proName": "NYSE:LLY", "title": "Eli Lilly"},
+    {"proName": "NYSE:JPM", "title": "JPMorgan"},
+    {"proName": "NYSE:V", "title": "Visa"},
+    {"proName": "NYSE:XOM", "title": "Exxon"},
+    {"proName": "NYSE:UNH", "title": "UnitedHealth"},
+    {"proName": "NYSE:MA", "title": "Mastercard"},
+    {"proName": "NASDAQ:COST", "title": "Costco"},
+    {"proName": "NYSE:HD", "title": "Home Depot"},
+    {"proName": "NYSE:PG", "title": "P&G"},
+    {"proName": "NASDAQ:NFLX", "title": "Netflix"},
+    {"proName": "NYSE:JNJ", "title": "J&J"},
+    {"proName": "NYSE:CRM", "title": "Salesforce"},
+    {"proName": "NYSE:BAC", "title": "Bank of America"},
+    {"proName": "NYSE:ABBV", "title": "AbbVie"},
+    {"proName": "NYSE:ORCL", "title": "Oracle"},
+    {"proName": "NYSE:MRK", "title": "Merck"},
+    {"proName": "NYSE:CVX", "title": "Chevron"},
+    {"proName": "NYSE:KO", "title": "Coca-Cola"},
+    {"proName": "NASDAQ:AMD", "title": "AMD"},
+    {"proName": "NASDAQ:PEP", "title": "PepsiCo"},
+    {"proName": "NYSE:WMT", "title": "Walmart"}
+  ],
+  "showSymbolLogo": true,
+  "isTransparent": false,
+  "displayMode": "adaptive",
+  "colorTheme": "dark",
+  "locale": "en"
+}
+</script>
 
 <div id="header">
   <div class="brand">
@@ -606,7 +636,6 @@ async function refreshAll() {
   spikes.forEach(showVolumeAlert);
   renderIndexStrip(quotes);
   renderTreemap(quotes);
-  renderTicker(quotes);
   $('overlay-msg').textContent = '';
 }
 
@@ -646,31 +675,12 @@ function startDemo() {
     spikes.forEach(showVolumeAlert);
     renderIndexStrip(quotes);
     renderTreemap(quotes);
-    renderTicker(quotes);
   };
   generate();
   setInterval(generate, state.intervalSeconds*1000);
   resetCountdown();
 }
 window.startDemo = startDemo;
-
-// ─── Ticker Tape (CNBC-style scrolling stock strip) ──────────────────────────
-function renderTicker(quotes) {
-  const track = $('ticker-track');
-  const items = TICKER_STOCKS.map(sym => {
-    const q = quotes[sym] || { last: 0, pctChange: 0 };
-    const cls = q.pctChange >= 0 ? 'up' : 'down';
-    const arrow = q.pctChange >= 0 ? '▲' : '▼';
-    const sign = q.pctChange >= 0 ? '+' : '';
-    return `<span class="ticker-item">
-      <span class="ticker-sym">${sym}</span>
-      <span class="ticker-price">${q.last.toFixed(2)}</span>
-      <span class="ticker-chg ${cls}"><span class="ticker-arrow">${arrow}</span>${sign}${q.pctChange.toFixed(2)}%</span>
-    </span>`;
-  }).join('');
-  // Duplicate content for seamless infinite scroll
-  track.innerHTML = items + items;
-}
 
 // ─── Index Strip ─────────────────────────────────────────────────────────────
 function renderIndexStrip(quotes) {
